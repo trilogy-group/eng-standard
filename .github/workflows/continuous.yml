@@ -1,7 +1,9 @@
 name: Continuous flow
+
 on:
   push:
     branches: [main]
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -9,9 +11,12 @@ jobs:
 
       - name: Setup repo
         uses: actions/checkout@v2
-
+        
       - name: Get dependencies
         run: npm install
 
       - name: Release
-        run: bin/release.sh
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          bin/release.sh
