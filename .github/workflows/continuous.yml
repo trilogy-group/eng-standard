@@ -1,14 +1,17 @@
-name: continuous integration and deployment
+name: Continuous flow
 on:
   push:
     branches: [main]
 jobs:
-  test:
+  run:
     runs-on: ubuntu-latest
     steps:
 
       - name: Setup repo
         uses: actions/checkout@v2
+
+      - name: Get dependencies
+        run: npm install
 
       - name: Release
         run: bin/release.sh
