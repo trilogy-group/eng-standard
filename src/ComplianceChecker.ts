@@ -24,7 +24,7 @@ export class ComplianceChecker {
             console.log(`\n${humanRuleNameVal}`);
 
             for(const [checkName, checkFunc] of this.listChecks(rule)) {
-                const humanCheckNameVal = humanCheckName(checkName);
+                const humanCheckNameVal = humanCheckName(checkName).toLowerCase();
                 let outcome = 'PASS';
                 let message = null;
 
