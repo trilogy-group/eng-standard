@@ -32,7 +32,12 @@ export class TrunkBasedDevelopment extends Rule {
     }
 
     async checkOnlyShortLivedBranches(product: Product) {
-        const unprotectedBranches = product.repo.branches.filter(branch => !branch.protected);
+        const mainBranch = product.repo.mainBranch;
+        assert(mainBranch, 'a main branch must exist');
+
+        const unprotectedBranches = product.repo.branches.filter(branch =>
+            !branch.protected && branch.name != mainBranch.name);
+        
         const earliestBranchAge = new Date();
         earliestBranchAge.setHours(earliestBranchAge.getHours() - this.maxBranchAge);
 
@@ -42,7 +47,7 @@ export class TrunkBasedDevelopment extends Rule {
             const diff = await this.octokit.repos.compareCommits({
                 owner: product.repo.owner,
                 repo: product.repo.name,
-                base: 'master',
+                base: mainBranch.name,
                 head: branch.name
             }).then(response => response.data);
 
