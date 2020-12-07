@@ -2,12 +2,16 @@ import { injectable } from "tsyringe";
 import assert from "assert";
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
-import YAML from 'yaml';
+import { Octokit } from "@octokit/rest";
 
 @injectable()
 export class MainIsAlwaysReleasable extends Rule {
 
     readonly id = 'ITD.BRANCH.2';
+
+    constructor(octokit: Octokit) {
+        super(octokit)
+    }
 
     async checkPullRequestsAreAlwaysReadyToMerge(product: Product) {
         await this.requireWorkflow(product, 'auto-rebase');

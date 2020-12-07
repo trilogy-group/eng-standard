@@ -2,12 +2,17 @@ import { injectable } from "tsyringe";
 import assert from "assert";
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
+import { Octokit } from "@octokit/rest";
 
 @injectable()
 export class TrunkBasedDevelopment extends Rule {
 
     readonly id = 'ITD.BRANCH.1';
     readonly maxBranchAge = 48; // hours
+
+    constructor(octokit: Octokit) {
+        super(octokit)
+    }
 
     async checkOneMainBranch(product: Product) {
         const mainBranch = product.repo.mainBranch;
