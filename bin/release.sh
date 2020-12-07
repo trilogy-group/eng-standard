@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-branch=(git branch --show-current)
-branch=(git branch --show-current)
+branch=$(git branch --show-current)
 git branch -D latest || true
 git branch -c main latest
 git switch latest
