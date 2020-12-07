@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 branch=(git branch --show-current)
+git branch -D latest || true
+git branch -c main latest
 git switch latest
-git merge --ff-only main
 npm run build
 git add -f dist/index.js
 git commit -m Release
