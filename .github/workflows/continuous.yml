@@ -1,0 +1,14 @@
+name: continuous integration and deployment
+on:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Setup repo
+        uses: actions/checkout@v2
+
+      - name: Release
+        run: bin/release.sh
