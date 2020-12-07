@@ -18,9 +18,10 @@ export class ComplianceChecker {
     async main() {
         const product = await this.productService.loadProduct();
 
+        let passing = true;
         for(const rule of this.rules) {
             const humanRuleNameVal = humanRuleName(rule);
-            console.error(humanRuleNameVal);
+            console.log(`\n${humanRuleNameVal}`);
 
             for(const [checkName, checkFunc] of this.listChecks(rule)) {
                 const humanCheckNameVal = humanCheckName(checkName);
@@ -30,18 +31,24 @@ export class ComplianceChecker {
                 try {
                     await checkFunc.call(rule, product);
                 } catch (e) {
+                    passing = false;
                     if (e instanceof AssertionError) {
                         outcome = 'FAIL';
                     } else {
                         outcome = 'ERROR';
+                        console.log(e);
                     }
                     message = e.message;
                 }
 
-                // ${product}
-                console.log(`${rule.id}\t${humanRuleNameVal}\t${humanCheckNameVal}\t${outcome}\t${message || ''}`);
+                console.log(`${outcome}\t${message || humanCheckNameVal}`);
+
+                // CSV output
+                //console.log(`${product}\t${rule.id}\t${humanRuleNameVal}\t${humanCheckNameVal}\t${outcome}\t${message || ''}`);
             }
         }
+
+        console.log(`\nRESULT ${passing ? 'PASS' : 'FAIL'}`);
     }
 
     listChecks(rule: any): Map<string,RuleCheck> {
