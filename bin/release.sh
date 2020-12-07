@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-git tag -d latest && git push --delete origin latest || true
+git tag -d latest || true
+git push --delete origin latest || true
 git branch -c main staging
 git switch staging
 npm run build
