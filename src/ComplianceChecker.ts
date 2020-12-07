@@ -49,6 +49,7 @@ export class ComplianceChecker {
         }
 
         console.log(`\nRESULT ${passing ? 'PASS' : 'FAIL'}`);
+        process.exitCode = passing ? 0 : 1;
     }
 
     listChecks(rule: any): Map<string,RuleCheck> {
