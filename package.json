@@ -4,13 +4,13 @@
   "description": "",
   "scripts": {
     "start": "ts-node src/main.ts",
-    "build": "tsc && ncc build"
+    "build": "tsc && ncc build lib/main.js -o dist"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@octokit/rest": "^18.0.9",
-    "@zeit/ncc": "^0.22.3",
+    "@vercel/ncc": "^0.25.1",
     "dotenv": "^8.2.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^9.0.0",
