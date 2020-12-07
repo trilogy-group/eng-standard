@@ -3,6 +3,11 @@ import { checkHumanName as humanCheckName, Rule, RuleCheck, ruleHumanName as hum
 import { AssertionError } from "assert";
 import './rules';
 import { ProductService } from "./services/ProductService";
+import Chalk from 'chalk';
+
+const RESULT_PASS = Chalk.green('✓');
+const RESULT_ERROR = Chalk.red('❗');
+const RESULT_FAIL = Chalk.red('✗');
 
 @injectable()
 export class ComplianceChecker {
@@ -25,7 +30,7 @@ export class ComplianceChecker {
 
             for(const [checkName, checkFunc] of this.listChecks(rule)) {
                 const humanCheckNameVal = humanCheckName(checkName).toLowerCase();
-                let outcome = 'PASS';
+                let outcome = RESULT_PASS;
                 let message = null;
 
                 try {
@@ -33,21 +38,21 @@ export class ComplianceChecker {
                 } catch (e) {
                     passing = false;
                     if (e instanceof AssertionError) {
-                        outcome = 'FAIL';
+                        outcome = RESULT_FAIL;
                     } else {
-                        outcome = 'ERROR';
+                        outcome = RESULT_ERROR;
                     }
                     message = e.message;
                 }
 
-                console.log(`${outcome}\t${message || humanCheckNameVal}`);
+                console.log(`${outcome} ${message || humanCheckNameVal}`);
 
                 // CSV output
                 //console.log(`${product}\t${rule.id}\t${humanRuleNameVal}\t${humanCheckNameVal}\t${outcome}\t${message || ''}`);
             }
         }
 
-        console.log(`\nRESULT ${passing ? 'PASS' : 'FAIL'}`);
+        console.log(`\nResult: ${Chalk.inverse(passing ? Chalk.green('PASS') : Chalk.red('FAIL'))}\n`);
         process.exitCode = passing ? 0 : 1;
     }
 
