@@ -36,7 +36,6 @@ export class ComplianceChecker {
                         outcome = 'FAIL';
                     } else {
                         outcome = 'ERROR';
-                        console.log(e);
                     }
                     message = e.message;
                 }
