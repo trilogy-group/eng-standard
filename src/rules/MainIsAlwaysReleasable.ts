@@ -18,9 +18,16 @@ export class MainIsAlwaysReleasable extends Rule {
     }
 
     async checkPullRequestsMustBeReviewed(product: Product) {
-        assert(product.repo.mainBranchProtection.required_pull_request_reviews.required_approving_review_count > 0,
+        assert(product.repo.mainBranch, 'a main branch must exist');
+        
+        const mainBranchProtectionReviews = product.repo.mainBranch.protection.required_pull_request_reviews;
+        assert(mainBranchProtectionReviews,
             'main branch must require one pull request review before merging');
-        assert(product.repo.mainBranchProtection.required_pull_request_reviews.dismiss_stale_reviews,
+        assert(mainBranchProtectionReviews.required_approving_review_count,
+            'main branch must require one pull request review before merging');
+        assert(mainBranchProtectionReviews.required_approving_review_count > 0,
+            'main branch must require one pull request review before merging');
+        assert(mainBranchProtectionReviews.dismiss_stale_reviews,
             'main branch must be set to dismiss stale reviews');
     }
 

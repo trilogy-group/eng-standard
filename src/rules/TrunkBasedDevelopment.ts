@@ -10,11 +10,11 @@ export class TrunkBasedDevelopment extends Rule {
     readonly maxBranchAge = 48; // hours
 
     async checkOneMainBranch(product: Product) {
-        const mainBranch = product.repo.branches.find(branch => branch.name == 'main');
-        const protectedBranches = product.repo.branches.filter(branch => branch.protected);
-
+        const mainBranch = product.repo.mainBranch;
         assert(mainBranch, 'a main branch must exist');
         assert(mainBranch.protected, 'the main branch must be protected');
+
+        const protectedBranches = product.repo.branches.filter(branch => branch.protected);
         assert(protectedBranches.length == 1, 'the main branch must be the only protected branch');
     }
 
@@ -32,6 +32,8 @@ export class TrunkBasedDevelopment extends Rule {
         earliestBranchAge.setHours(earliestBranchAge.getHours() - this.maxBranchAge);
 
         for(const branch of unprotectedBranches) {
+            assert(branch.name, 'all branches must be named');
+
             const diff = await this.octokit.repos.compareCommits({
                 owner: product.repo.owner,
                 repo: product.repo.name,
@@ -44,9 +46,12 @@ export class TrunkBasedDevelopment extends Rule {
                 return;
             }
 
-            const branchCreationDate = new Date(diff.commits[0].commit.committer.date);
-            assert(branchCreationDate >= earliestBranchAge,
-                `branch ${branch.name} is more than ${this.maxBranchAge} hours old`);
+            const commitDate = diff.commits[0].commit.committer?.date;
+            if (commitDate) {
+                const branchCreationDate = new Date(commitDate);
+                assert(branchCreationDate >= earliestBranchAge,
+                    `branch ${branch.name} is more than ${this.maxBranchAge} hours old`);
+            }
         }
     }
 

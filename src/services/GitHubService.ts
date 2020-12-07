@@ -35,15 +35,21 @@ export class GitHubService {
                 repo: name
             }).then(response => response.data),
 
-            this.octokit.repos.getBranchProtection({
+            this.octokit.repos.getBranch({
                 owner: owner,
                 repo: name,
-                branch: 'master',
+                branch: 'main',
             }).then(response => response.data)
-            .catch(e => { console.log(e); throw e; })
+            .catch(e => {
+                // main missing is handled as undefined
+                if (e.status && e.status == 404) {
+                    return undefined;
+                }
+                throw e;
+            })
 
-        ]).then(([ settings, workflows, branches, mainBranchProtection ]) =>
-            new Repo(owner, name, settings, workflows, branches, mainBranchProtection)
+        ]).then(([ settings, workflows, branches, mainBranch ]) =>
+            new Repo(owner, name, settings, workflows, branches, mainBranch)
         );
     }
 

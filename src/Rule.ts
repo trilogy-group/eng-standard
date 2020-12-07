@@ -17,19 +17,21 @@ export abstract class Rule {
     async requireWorkflow(product: Product, workflowName: string) {
         const workflow = product.repo.workflows.find(workflow => workflow.name == workflowName);
         assert(workflow, `${workflowName} workflow must be defined`);
-    
-        const workflowFile = await this.octokit.repos.getContent({
+
+        // use any because the types are broken: cannot handle both array and singular types
+        const workflowFile:any = await this.octokit.repos.getContent({
             owner: product.repo.owner,
             repo: product.repo.name,
             path: workflow.path
         }).then(response => response.data);
     
-        const defaultWorkflowFile = await this.octokit.repos.getContent({
+        // use any because the types are broken: cannot handle both array and singular types
+        const defaultWorkflowFile:any = await this.octokit.repos.getContent({
             owner: this.SEM_REPO_OWNER,
             repo: this.SEM_REPO_NAME,
             path: workflow.path
         }).then(response => response.data);
-    
+
         // check that it matches the one in the SEM template
         assert(workflowFile.sha == defaultWorkflowFile.sha,
             `.github/workflows/${workflowName}.yml must match the template`);

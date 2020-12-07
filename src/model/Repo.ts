@@ -1,9 +1,9 @@
-import { ReposGetResponseData, ReposListBranchesResponseData, ActionsListRepoWorkflowsResponseData, ReposGetBranchProtectionResponseData } from "@octokit/types";
+import { components } from "@octokit/openapi-types";
 
-export type Settings = ReposGetResponseData;
-export type Workflow = ActionsListRepoWorkflowsResponseData["workflows"][0];
-export type Branch = ReposListBranchesResponseData[0];
-export type BranchProtection = ReposGetBranchProtectionResponseData;
+export type FullRepository = components["schemas"]["full-repository"]
+export type Workflow = components["schemas"]["workflow"];
+export type BranchShort = components["schemas"]["branch-short"];
+export type BranchWithProtection = components["schemas"]["branch-with-protection"];
 
 export class Repo {
 
@@ -12,10 +12,10 @@ export class Repo {
     constructor(
         readonly owner: string,
         readonly name: string,
-        readonly settings: Settings,
+        readonly settings: FullRepository,
         readonly workflows: Workflow[],
-        readonly branches: Branch[],
-        readonly mainBranchProtection: BranchProtection,
+        readonly branches: BranchShort[],
+        readonly mainBranch?: BranchWithProtection,
     ) {
         this.id = `${owner}/${name}`;
         this.owner = owner;
@@ -23,7 +23,7 @@ export class Repo {
         this.settings = settings;
         this.workflows = workflows.filter(workflow => workflow.state === 'active');
         this.branches = branches;
-        this.mainBranchProtection = mainBranchProtection;
+        this.mainBranch = mainBranch;
     }
 
 }

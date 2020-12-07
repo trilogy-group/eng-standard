@@ -1,16 +1,16 @@
 {
-  "name": "shipeverymergecompliance",
+  "name": "eng-template-app",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
   "scripts": {
     "start": "ts-node src/main.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc && ncc build"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@octokit/rest": "^18.0.9",
+    "@zeit/ncc": "^0.22.3",
     "dotenv": "^8.2.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^9.0.0",

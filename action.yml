@@ -1,0 +1,10 @@
+name: 'Trilogy Engineering Standards'
+description: 'Ensures a repository complies with the new ShipEveryMerge Engineering standard'
+inputs:
+  repository:
+    description: 'Repository name with owner. For example, trilogy-group/sococo'
+    default: ${{ github.repository }}
+    required: false
+runs:
+  using: node12
+  main: dist/index.js
