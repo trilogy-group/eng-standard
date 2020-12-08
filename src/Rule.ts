@@ -2,6 +2,7 @@ import { Product } from "./model/Product";
 import { Octokit } from "@octokit/rest";
 import assert from "assert";
 import fs from "fs";
+import path from "path";
 
 export abstract class Rule {
 
@@ -25,8 +26,12 @@ export abstract class Rule {
             path: workflow.path
         }).then(response => response.data);
 
+        const appFileName = require.main?.filename;
+        if (!appFileName) throw new Error('Cannot determine project location, require.main is undefined');
+        const appDir = path.dirname(path.dirname(appFileName));
+
         const workflowContent = Buffer.from(workflowFile.content, 'base64').toString('utf8');
-        const templateContent = fs.readFileSync(`template/${workflow.path}`, { encoding: 'utf8' });
+        const templateContent = fs.readFileSync(`${appDir}/template/${workflow.path}`, { encoding: 'utf8' });
 
         // check that it matches the one in the SEM template
         assert(workflowContent == templateContent,

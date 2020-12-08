@@ -22,8 +22,6 @@ export class ComplianceChecker {
     }
 
     async main() {
-        exec('ls -l', (_, stdout) => console.log(stdout));
-
         const product = await this.productService.loadProduct();
 
         let passing = true;
