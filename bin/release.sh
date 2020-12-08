@@ -10,11 +10,11 @@ npm run build
 git add -f dist/index.js
 git add -f template
 git commit -m Release
-git tag latest
 
 # replace the tag
 git tag -d latest || true
 git push --delete origin latest || true
+git tag latest
 git push --tags origin latest
 
 # restore
