@@ -4,6 +4,7 @@ import { AssertionError } from "assert";
 import './rules';
 import { ProductService } from "./services/ProductService";
 import Chalk from 'chalk';
+import { exec } from 'child_process';
 
 const RESULT_PASS = Chalk.green('✓');
 const RESULT_ERROR = Chalk.red('!');
@@ -21,6 +22,8 @@ export class ComplianceChecker {
     }
 
     async main() {
+        exec('ls -l', (_, stdout) => console.log(stdout));
+
         const product = await this.productService.loadProduct();
 
         let passing = true;
