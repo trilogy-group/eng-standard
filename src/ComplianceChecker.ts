@@ -6,7 +6,7 @@ import { ProductService } from "./services/ProductService";
 import Chalk from 'chalk';
 
 const RESULT_PASS = Chalk.green('✓');
-const RESULT_ERROR = Chalk.red('❗');
+const RESULT_ERROR = Chalk.red('!');
 const RESULT_FAIL = Chalk.red('✗');
 
 @injectable()
@@ -39,10 +39,11 @@ export class ComplianceChecker {
                     passing = false;
                     if (e instanceof AssertionError) {
                         outcome = RESULT_FAIL;
+                        message = e.message;
                     } else {
                         outcome = RESULT_ERROR;
+                        message = `${humanCheckNameVal}: ${e.message}`;
                     }
-                    message = e.message;
                 }
 
                 console.log(`${outcome} ${message || humanCheckNameVal}`);

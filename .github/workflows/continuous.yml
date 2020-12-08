@@ -11,9 +11,13 @@ jobs:
 
       - name: Setup repo
         uses: actions/checkout@v2
-        
-      - name: Get dependencies
-        run: npm install
+      
+      - name: Get template
+        uses: actions/checkout@v2
+        with:
+          repository: trilogy-group/eng-template
+          token: ${{ secrets.TEMPLATE_GITHUB_TOKEN }}
+          path: template
 
       - name: Release
         run: |

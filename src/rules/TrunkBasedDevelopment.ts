@@ -23,9 +23,9 @@ export class TrunkBasedDevelopment extends Rule {
         assert(protectedBranches.length == 1, 'the main branch must be the only protected branch');
     }
 
-    async checkValidPullRequestsAreMergedAutomatically(product: Product) {
-        await this.requireWorkflow(product, 'auto-merge');
-    }
+    // async checkValidPullRequestsAreMergedAutomatically(product: Product) {
+    //     await this.requireWorkflow(product, 'auto-merge');
+    // }
 
     async checkDeleteBranchAfterPullRequestMerged(product: Product) {
         assert(product.repo.settings.delete_branch_on_merge, 'delete branch on merge is not set');

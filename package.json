@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "ts-node src/main.ts",
-    "build": "tsc && ncc build lib/main.js -o dist"
+    "prebuild": "bin/get-template.sh; npm install",
+    "build": "tsc && ncc build lib/main.js -o dist",
+    "start": "ts-node src/main.ts"
   },
   "author": "",
   "license": "ISC",
