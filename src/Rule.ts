@@ -14,9 +14,10 @@ export abstract class Rule {
         this.octokit = octokit;
     }
 
-    async requireWorkflow(product: Product, workflowName: string) {
-        const workflow = product.repo.workflows.find(workflow => workflow.name == workflowName);
-        assert(workflow, `${workflowName} workflow must be defined`);
+    async requireWorkflow(product: Product, workflowFileName: string) {
+        const workflow = product.repo.workflows.find(workflow =>
+            workflow.path == `.github/workflows/${workflowFileName}.yml`);
+        assert(workflow, `${workflowFileName} workflow must be defined`);
 
         // use any because the types are broken: cannot handle both array and singular types
         const workflowFile:any = await this.octokit.repos.getContent({
@@ -34,7 +35,7 @@ export abstract class Rule {
 
         // check that it matches the one in the SEM template
         assert(workflowFile.sha == defaultWorkflowFile.sha,
-            `.github/workflows/${workflowName}.yml must match the template`);
+            `GitHub workflow ${workflowFileName}.yml must match the template`);
     
         return workflow;
     }
