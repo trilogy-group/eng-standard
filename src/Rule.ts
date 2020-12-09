@@ -15,9 +15,11 @@ async function assertOrFix(value: any, message: string, repair:() => Promise<voi
                 await repair();
             } catch (repairError) {
                 assertError.message = `${message} and repair failed with ${repairError}`;
+                throw assertError;
             }
+        } else {
+            throw assertError;
         }
-        throw assertError;
     }
 }
 
