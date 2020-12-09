@@ -42,7 +42,7 @@ export abstract class Rule {
         const templateContent = fs.readFileSync(`${appDir}/template/${workflowFilePath}`, { encoding: 'utf8' });
 
         const workflow = product.repo.workflows.find(workflow => workflow.path == workflowFilePath);
-        await assertOrFix(workflow, `${workflowFileName} workflow must be defined`, async () => {
+        await assertOrFix(workflow, `workflow ${workflowFileName}.yml must be defined`, async () => {
             await this.updateFile({
                 product: product,
                 path: workflowFilePath,
