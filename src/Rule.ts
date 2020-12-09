@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 
 async function assertOrFix(value: any, message: string, repair:() => Promise<void>): Promise<void> {
-    const doRepair = process.env.repair == 'true';
+    const doRepair = process.env.INPUT_REPAIR == 'true';
     try {
         assert(value, message);
     } catch (assertError) {

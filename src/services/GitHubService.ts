@@ -12,8 +12,8 @@ export class GitHubService {
     }
 
     async loadRepository(): Promise<Repo> {
-        const repoId = process.env.GITHUB_REPOSITORY;
-        if (!repoId) throw new Error(`GITHUB_REPOSITORY must be specified`);
+        const repoId = process.env.INPUT_REPOSITORY;
+        if (!repoId) throw new Error(`INPUT_REPOSITORY must be specified`);
 
         //console.debug(`Loading GitHub information for ${repoId}`);
         const [ owner, name ] = repoId.split('/');
