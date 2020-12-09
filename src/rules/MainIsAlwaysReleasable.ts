@@ -14,11 +14,11 @@ export class MainIsAlwaysReleasable extends Rule {
     }
 
     async checkPullRequestsAreAlwaysReadyToMerge(product: Product) {
-        await this.requireWorkflow(product, 'auto-rebase');
+        await this.requireWorkflow(product, 'pr-rebase');
     }
 
     async checkDoContinuousIntegrationBeforeMerge(product: Product) {
-        await this.requireWorkflow(product, 'integrate');
+        await this.requireWorkflow(product, 'pr-verify');
     }
 
     async checkPullRequestsMustBeReviewed(product: Product) {
