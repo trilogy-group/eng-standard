@@ -4,7 +4,6 @@ import { AssertionError } from "assert";
 import './rules';
 import { ProductService } from "./services/ProductService";
 import Chalk from 'chalk';
-import { exec } from 'child_process';
 
 const RESULT_PASS = Chalk.green('✓');
 const RESULT_ERROR = Chalk.red('!');
@@ -36,14 +35,14 @@ export class ComplianceChecker {
 
                 try {
                     await checkFunc.call(rule, product);
-                } catch (e) {
+                } catch (error) {
                     passing = false;
-                    if (e instanceof AssertionError) {
+                    if (error instanceof AssertionError) {
                         outcome = RESULT_FAIL;
-                        message = e.message;
+                        message = error.message;
                     } else {
                         outcome = RESULT_ERROR;
-                        message = `${humanCheckNameVal}: ${e.message}`;
+                        message = `${humanCheckNameVal}: ${error.message}`;
                     }
                 }
 

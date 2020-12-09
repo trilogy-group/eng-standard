@@ -1,21 +1,23 @@
 import { Product } from "./model/Product";
 import { Octokit } from "@octokit/rest";
 import assert from "assert";
-import AssertionError from "assert";
+import { AssertionError } from "assert";
 import fs from "fs";
 import path from "path";
 
-function assertOrFix(value: any, message: string, repair: Function): any {
+async function assertOrFix(value: any, message: string, repair:() => Promise<void>): Promise<void> {
     const doRepair = process.env.repair == 'true';
     try {
         assert(value, message);
-        return null;
-    } catch (e) {
-        if (e instanceof AssertionError && doRepair) {
-            return repair();
-        } else {
-            throw e;
+    } catch (assertError) {
+        if (assertError instanceof AssertionError && doRepair) {
+            try {
+                await repair();
+            } catch (repairError) {
+                assertError.message = `${message} and repair failed with ${repairError}`;
+            }
         }
+        throw assertError;
     }
 }
 
@@ -41,7 +43,11 @@ export abstract class Rule {
 
         const workflow = product.repo.workflows.find(workflow => workflow.path == workflowFilePath);
         await assertOrFix(workflow, `${workflowFileName} workflow must be defined`, async () => {
-            await this.updateFile(product, workflowFilePath, templateContent);
+            await this.updateFile({
+                product: product,
+                path: workflowFilePath,
+                content: templateContent
+            });
         });
 
         // use any because the types are broken: cannot handle both array and singular types
@@ -56,17 +62,23 @@ export abstract class Rule {
         await assertOrFix(workflowContent == templateContent,
                 `workflow ${workflowFileName}.yml must match the template`,
                 async () => {
-            await this.updateFile(product, workflowFilePath, templateContent);
+            await this.updateFile({
+                product: product,
+                path: workflowFilePath,
+                content: templateContent,
+                sha: workflowFile.sha
+            });
         });
     }
 
-    async updateFile(product: Product, filePath: string, fileContent: string): Promise<void> {
+    async updateFile(options: { product: Product; path: string; content: string; sha?: string; }): Promise<void> {
         await this.octokit.repos.createOrUpdateFileContents({
-            owner: product.repo.owner,
-            repo: product.repo.name,
+            owner: options.product.repo.owner,
+            repo: options.product.repo.name,
             message: `Update to Engineering Standards`,
-            path: filePath,
-            content: fileContent
+            path: options.path,
+            content: Buffer.from(options.content).toString('base64'),
+            sha: options.sha
         });
     }
 
