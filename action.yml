@@ -5,6 +5,10 @@ inputs:
     description: 'Repository name with owner. For example, trilogy-group/sococo'
     default: ${{ github.repository }}
     required: false
+  repair:
+    description: 'Repair issues that we can'
+    default: "true"
+    required: false
 runs:
   using: node12
   main: dist/index.js
