@@ -23,12 +23,16 @@ export class TrunkBasedDevelopment extends Rule {
         assert(protectedBranches.length == 1, 'the main branch must be the only protected branch');
     }
 
-    // async checkValidPullRequestsAreMergedAutomatically(product: Product) {
-    //     await this.requireWorkflow(product, 'auto-merge');
-    // }
+    async checkLinearCommitHistory(product: Product) {
+        assert(product.repo.mainBranch?.protection?.required_linear_history?.enabled,
+            'the main branch must have a linear commit history');
+        assert(product.repo.settings.allow_squash_merge, 'allow squash merge must be set');
+        assert(!product.repo.settings.allow_merge_commit, 'allow merge commit must be unset');
+        assert(!product.repo.settings.allow_rebase_merge, 'allow rebase merge must be unset');
+    }
 
     async checkDeleteBranchAfterPullRequestMerged(product: Product) {
-        assert(product.repo.settings.delete_branch_on_merge, 'delete branch on merge is not set');
+        assert(product.repo.settings.delete_branch_on_merge, 'delete branch on merge must be set');
     }
 
     async checkOnlyShortLivedBranches(product: Product) {
