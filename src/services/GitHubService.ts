@@ -11,6 +11,14 @@ export class GitHubService {
         this.octokit = octokit;
     }
 
+    private handleError(e:any) {
+        // main missing is handled as undefined
+        if (e.status && e.status == 404) {
+            return undefined;
+        }
+        throw e;
+    }
+
     async loadRepository(): Promise<Repo> {
         const repoId = process.env.INPUT_REPOSITORY;
         if (!repoId) throw new Error(`INPUT_REPOSITORY must be specified`);
@@ -40,16 +48,18 @@ export class GitHubService {
                 repo: name,
                 branch: 'main',
             }).then(response => response.data)
-            .catch(e => {
-                // main missing is handled as undefined
-                if (e.status && e.status == 404) {
-                    return undefined;
-                }
-                throw e;
-            })
+            .catch(this.handleError),
 
-        ]).then(([ settings, workflows, branches, mainBranch ]) =>
-            new Repo(owner, name, settings, workflows, branches, mainBranch)
+            this.octokit.repos.getBranchProtection({
+                mediaType: { previews: [ 'luke-cage' ] },
+                owner: owner,
+                repo: name,
+                branch: 'main',
+            }).then(response => response.data)
+            .catch(this.handleError)
+
+        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection ]) =>
+            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection)
         );
     }
 
