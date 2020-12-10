@@ -17,22 +17,40 @@ export class TrunkBasedDevelopment extends Rule {
     async checkOneMainBranch(product: Product) {
         const mainBranch = product.repo.mainBranch;
         assert(mainBranch, 'a main branch must exist');
-        assert(mainBranch.protected, 'the main branch must be protected');
 
-        const protectedBranches = product.repo.branches.filter(branch => branch.protected);
-        assert(protectedBranches.length == 1, 'the main branch must be the only protected branch');
+        const otherProtected = product.repo.branches.some(branch =>
+            branch.protected && branch.name != mainBranch.name);
+        assert(!otherProtected, 'the main branch must be the only protected branch');
     }
 
     async checkLinearCommitHistory(product: Product) {
-        assert(product.repo.mainBranch?.protection?.required_linear_history?.enabled,
-            'the main branch must have a linear commit history');
-        assert(product.repo.settings.allow_squash_merge, 'allow squash merge must be set');
-        assert(!product.repo.settings.allow_merge_commit, 'allow merge commit must be unset');
-        assert(!product.repo.settings.allow_rebase_merge, 'allow rebase merge must be unset');
+        assert(product.repo.settings.allow_squash_merge,
+            'squash merge is disabled - squash merge must be the only merge type');
+        assert(product.repo.settings.allow_squash_merge,
+            'merge commit is enabled - squash merge must be the only merge type');
+        assert(product.repo.settings.allow_rebase_merge,
+            'rebase merge is enabled - squash merge must be the only merge type');
+    }
+
+    async fixLinearCommitHistory(product: Product) {
+        await this.octokit.repos.update({
+            owner: product.repo.owner,
+            repo: product.repo.name,
+            delete_branch_on_merge: true
+        });
     }
 
     async checkDeleteBranchAfterPullRequestMerged(product: Product) {
-        assert(product.repo.settings.delete_branch_on_merge, 'delete branch on merge must be set');
+        assert(product.repo.settings.delete_branch_on_merge,
+            'delete branch on merge must be set');
+    }
+
+    async fixDeleteBranchAfterPullRequestMerged(product: Product) {
+        await this.octokit.repos.update({
+            owner: product.repo.owner,
+            repo: product.repo.name,
+            delete_branch_on_merge: true
+        });
     }
 
     async checkOnlyShortLivedBranches(product: Product) {
@@ -71,6 +89,10 @@ export class TrunkBasedDevelopment extends Rule {
 
     async checkHasSemComplianceGithubCheck(product: Product) {
         await this.requireWorkflow(product, 'engineering-standards');
+    }
+
+    async fixHasSemComplianceGithubCheck(product: Product) {
+        await this.fixWorkflow(product, 'engineering-standards');
     }
 
 }

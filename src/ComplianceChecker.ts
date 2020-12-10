@@ -21,6 +21,7 @@ export class ComplianceChecker {
     }
 
     async main() {
+        const doRepair = process.env.INPUT_REPAIR == 'true';
         const product = await this.productService.loadProduct();
 
         let passing = true;
@@ -30,16 +31,25 @@ export class ComplianceChecker {
 
             for(const [checkName, checkFunc] of this.listChecks(rule)) {
                 const humanCheckNameVal = humanCheckName(checkName).toLowerCase();
+                const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
                 let outcome = RESULT_PASS;
                 let message = null;
 
                 try {
                     await checkFunc.call(rule, product);
                 } catch (error) {
-                    passing = false;
                     if (error instanceof AssertionError) {
-                        outcome = RESULT_FAIL;
-                        message = error.message;
+                        if (doRepair && fixFunc) {
+                            try {
+                                await fixFunc.call(rule, product);
+                            } catch (repairError) {
+                                outcome = RESULT_FAIL;
+                                message = `${error.message} and repair failed with ${repairError}`;
+                            }
+                        } else {
+                            outcome = RESULT_FAIL;
+                            message = error.message;
+                        }
                     } else {
                         outcome = RESULT_ERROR;
                         message = `${humanCheckNameVal}: ${error.message}`;
@@ -47,13 +57,15 @@ export class ComplianceChecker {
                 }
 
                 console.log(`${outcome} ${message || humanCheckNameVal}`);
-
-                // CSV output
-                //console.log(`${product}\t${rule.id}\t${humanRuleNameVal}\t${humanCheckNameVal}\t${outcome}\t${message || ''}`);
+                passing &&= (outcome == RESULT_PASS);
             }
         }
 
-        console.log(`\nResult: ${Chalk.inverse(passing ? Chalk.green('PASS') : Chalk.red('FAIL'))}\n`);
+        console.log(`\nResult: ${Chalk.inverse(passing ? Chalk.green('PASS') : Chalk.red('FAIL'))}`);
+        if (!passing && doRepair) {
+            console.log('trilogy-eng-standards needs admin access on your repository to fix most issues');
+        }
+        console.log('');
         process.exitCode = passing ? 0 : 1;
     }
 

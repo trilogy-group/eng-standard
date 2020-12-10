@@ -17,14 +17,25 @@ export class MainIsAlwaysReleasable extends Rule {
         await this.requireWorkflow(product, 'pr-rebase');
     }
 
+    async fixPullRequestsAreAlwaysReadyToMerge(product: Product) {
+        await this.fixWorkflow(product, 'pr-rebase');
+    }
+
     async checkDoContinuousIntegrationBeforeMerge(product: Product) {
         await this.requireWorkflow(product, 'pr-verify');
+    }
+
+    async fixDoContinuousIntegrationBeforeMerge(product: Product) {
+        await this.fixWorkflow(product, 'pr-verify');
     }
 
     async checkPullRequestsMustBeReviewed(product: Product) {
         assert(product.repo.mainBranch, 'a main branch must exist');
         
-        const mainBranchProtectionReviews = product.repo.mainBranch.protection.required_pull_request_reviews;
+        const mainBranchProtection = product.repo.mainBranch.protection;
+        assert(mainBranchProtection, 'main branch must be protected');
+
+        const mainBranchProtectionReviews = mainBranchProtection.required_pull_request_reviews;
         assert(mainBranchProtectionReviews,
             'main branch must require one pull request review before merging');
         assert(mainBranchProtectionReviews.required_approving_review_count,
@@ -33,6 +44,33 @@ export class MainIsAlwaysReleasable extends Rule {
             'main branch must require one pull request review before merging');
         assert(mainBranchProtectionReviews.dismiss_stale_reviews,
             'main branch must be set to dismiss stale reviews');
+        assert(mainBranchProtection.required_linear_history?.enabled,
+            'main branch must have linear commit history');
+    }
+
+    async fixPullRequestsMustBeReviewed(product: Product) {
+        await this.octokit.repos.updateBranchProtection({
+            mediaType: { previews: [ 'luke-cage' ] },
+            owner: product.repo.owner,
+            repo: product.repo.name,
+            branch: 'main',
+            required_status_checks: {
+                strict: true,
+                contexts: []
+            },
+            // admins must be able to fix compliance issues
+            enforce_admins: false,
+            required_pull_request_reviews: {
+                dismissal_restrictions: {},
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: true,
+                required_approving_review_count: 1
+            },
+            restrictions: null,
+            required_linear_history: true,
+            allow_force_pushes: false,
+            allow_deletions: false
+        });
     }
 
 }

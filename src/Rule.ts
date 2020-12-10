@@ -1,27 +1,8 @@
 import { Product } from "./model/Product";
 import { Octokit } from "@octokit/rest";
-import assert from "assert";
-import { AssertionError } from "assert";
 import fs from "fs";
 import path from "path";
-
-async function assertOrFix(value: any, message: string, repair:() => Promise<void>): Promise<void> {
-    const doRepair = process.env.INPUT_REPAIR == 'true';
-    try {
-        assert(value, message);
-    } catch (assertError) {
-        if (assertError instanceof AssertionError && doRepair) {
-            try {
-                await repair();
-            } catch (repairError) {
-                assertError.message = `${message} and repair failed with ${repairError}`;
-                throw assertError;
-            }
-        } else {
-            throw assertError;
-        }
-    }
-}
+import assert from "assert";
 
 export abstract class Rule {
 
@@ -38,39 +19,48 @@ export abstract class Rule {
     async requireWorkflow(product: Product, workflowFileName: string): Promise<void> {
         const workflowFilePath = `.github/workflows/${workflowFileName}.yml`;
 
-        const appFileName = require.main?.filename;
-        if (!appFileName) throw new Error('Cannot determine project location, require.main is undefined');
-        const appDir = path.dirname(path.dirname(appFileName));
-        const templateContent = fs.readFileSync(`${appDir}/template/${workflowFilePath}`, { encoding: 'utf8' });
-
         const workflow = product.repo.workflows.find(workflow => workflow.path == workflowFilePath);
-        await assertOrFix(workflow, `workflow ${workflowFileName}.yml must be defined`, async () => {
-            await this.updateFile({
-                product: product,
-                path: workflowFilePath,
-                content: templateContent
-            });
-        });
+        assert(workflow, `workflow ${workflowFileName}.yml must be defined`);
 
+        // get the workflow file contents
         // use any because the types are broken: cannot handle both array and singular types
         const workflowFile:any = await this.octokit.repos.getContent({
             owner: product.repo.owner,
             repo: product.repo.name,
             path: workflowFilePath
         }).then(response => response.data);
-
-        // check that it matches the one in the SEM template
         const workflowContent = Buffer.from(workflowFile.content, 'base64').toString('utf8');
-        await assertOrFix(workflowContent == templateContent,
-                `workflow ${workflowFileName}.yml must match the template`,
-                async () => {
-            await this.updateFile({
-                product: product,
-                path: workflowFilePath,
-                content: templateContent,
-                sha: workflowFile.sha
-            });
+        const templateContent = this.getTemplateFileContent(workflowFilePath);
+
+        // check that it matches the template
+        assert(workflowContent == templateContent, `workflow ${workflowFileName}.yml must match the template`);
+    }
+
+    async fixWorkflow(product: Product, workflowFileName: string): Promise<void> {
+        const workflowFilePath = `.github/workflows/${workflowFileName}.yml`;
+        const templateContent = this.getTemplateFileContent(workflowFilePath);
+
+        // we need the existing file for the sha check
+        const workflowFile:any = await this.octokit.repos.getContent({
+            owner: product.repo.owner,
+            repo: product.repo.name,
+            path: workflowFilePath
+        }).then(response => response.data);
+
+        // update the workflow file
+        await this.updateFile({
+            product: product,
+            path: workflowFilePath,
+            content: templateContent,
+            sha: workflowFile.sha
         });
+    }
+
+    private getTemplateFileContent(workflowFilePath: string) {
+        const appFileName = require.main?.filename;
+        if (!appFileName) throw new Error('Cannot determine project location, require.main is undefined');
+        const appDir = path.dirname(path.dirname(appFileName));
+        return fs.readFileSync(`${appDir}/template/${workflowFilePath}`, { encoding: 'utf8' });
     }
 
     async updateFile(options: { product: Product; path: string; content: string; sha?: string; }): Promise<void> {
@@ -85,6 +75,7 @@ export abstract class Rule {
     }
 
 }
+
 
 export interface RuleCheck {
     (product: Product): Promise<void>
