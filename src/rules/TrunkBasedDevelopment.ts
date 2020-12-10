@@ -24,11 +24,11 @@ export class TrunkBasedDevelopment extends Rule {
     }
 
     async checkLinearCommitHistory(product: Product) {
-        assert(product.repo.settings.allow_squash_merge,
+        assert(product.repo.settings.allow_squash_merge == true,
             'squash merge is disabled - squash merge must be the only merge type');
-        assert(product.repo.settings.allow_squash_merge,
+        assert(product.repo.settings.allow_merge_commit == false,
             'merge commit is enabled - squash merge must be the only merge type');
-        assert(product.repo.settings.allow_rebase_merge,
+        assert(product.repo.settings.allow_rebase_merge == false,
             'rebase merge is enabled - squash merge must be the only merge type');
     }
 
@@ -36,6 +36,9 @@ export class TrunkBasedDevelopment extends Rule {
         await this.octokit.repos.update({
             owner: product.repo.owner,
             repo: product.repo.name,
+            allow_squash_merge: true,
+            allow_merge_commit: false,
+            allow_rebase_merge: false,
             delete_branch_on_merge: true
         });
     }

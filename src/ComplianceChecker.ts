@@ -22,7 +22,7 @@ export class ComplianceChecker {
 
     async main() {
         const doRepair = process.env.INPUT_REPAIR == 'true';
-        const product = await this.productService.loadProduct();
+        let product = await this.productService.loadProduct();
 
         let passing = true;
         for(const rule of this.rules) {
@@ -32,27 +32,34 @@ export class ComplianceChecker {
             for(const [checkName, checkFunc] of this.listChecks(rule)) {
                 const humanCheckNameVal = humanCheckName(checkName).toLowerCase();
                 const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
-                let outcome = RESULT_PASS;
-                let message = null;
 
-                try {
-                    await checkFunc.call(rule, product);
-                } catch (error) {
-                    if (error instanceof AssertionError) {
-                        if (doRepair && fixFunc) {
-                            try {
-                                await fixFunc.call(rule, product);
-                            } catch (repairError) {
-                                outcome = RESULT_FAIL;
-                                message = `${error.message} and repair failed with ${repairError}`;
-                            }
-                        } else {
+                let outcome = null;
+                let message = null;
+                for(let attempt = 0; outcome == null; attempt++) {
+                    // check the status
+                    try {
+                        await checkFunc.call(rule, product);
+                        outcome = RESULT_PASS;
+                    } catch (error) {
+                        if (error instanceof AssertionError) {
                             outcome = RESULT_FAIL;
                             message = error.message;
+                        } else {
+                            outcome = RESULT_ERROR;
+                            message = `${humanCheckNameVal}: ${error.message}`;
                         }
-                    } else {
-                        outcome = RESULT_ERROR;
-                        message = `${humanCheckNameVal}: ${error.message}`;
+                    }
+
+                    // try to repair it
+                    if (attempt == 0 && outcome != RESULT_PASS && doRepair && fixFunc) {
+                        try {
+                            await fixFunc.call(rule, product);
+                            product = await this.productService.loadProduct();
+                            outcome = null;
+                            message = null;
+                        } catch (repairError) {
+                            message += ` and repair failed with ${repairError}`;
+                        }
                     }
                 }
 
