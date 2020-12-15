@@ -41,18 +41,20 @@ export abstract class Rule {
         const templateContent = this.getTemplateFileContent(workflowFilePath);
 
         // we need the existing file for the sha check
+        // may be null if the file does not exist or is inaccessible
         const workflowFile:any = await this.octokit.repos.getContent({
             owner: product.repo.owner,
             repo: product.repo.name,
             path: workflowFilePath
-        }).then(response => response.data);
+        }).then(response => response.data)
+        .catch(_ => null);
 
         // update the workflow file
         await this.updateFile({
             product: product,
             path: workflowFilePath,
             content: templateContent,
-            sha: workflowFile.sha
+            sha: workflowFile?.sha
         });
     }
 
