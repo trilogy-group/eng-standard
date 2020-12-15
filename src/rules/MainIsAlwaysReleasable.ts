@@ -34,7 +34,9 @@ export class MainIsAlwaysReleasable extends Rule {
         
         const mainBranchProtection = product.repo.mainBranch.protection;
         assert(mainBranchProtection, 'main branch must be protected');
-
+        assert(mainBranchProtection.required_linear_history?.enabled,
+            'main branch must have linear commit history');
+        
         const mainBranchProtectionReviews = mainBranchProtection.required_pull_request_reviews;
         assert(mainBranchProtectionReviews,
             'main branch must require one pull request review before merging');
@@ -44,8 +46,14 @@ export class MainIsAlwaysReleasable extends Rule {
             'main branch must require one pull request review before merging');
         assert(mainBranchProtectionReviews.dismiss_stale_reviews,
             'main branch must be set to dismiss stale reviews');
-        assert(mainBranchProtection.required_linear_history?.enabled,
-            'main branch must have linear commit history');
+
+        const mainBranchProtectionChecks = mainBranchProtection.required_status_checks;
+        assert(mainBranchProtectionChecks.contexts.includes('Code analysis'),
+            'main branch protection must check code analysis results');
+        assert(mainBranchProtectionChecks.contexts.includes('Unit test'),
+            'main branch protection must check unit test results');
+        assert(mainBranchProtectionChecks.contexts.includes('Integration test'),
+            'main branch protection must check integration test results');
     }
 
     async fixPullRequestsMustBeReviewed(product: Product) {
@@ -56,7 +64,11 @@ export class MainIsAlwaysReleasable extends Rule {
             branch: 'main',
             required_status_checks: {
                 strict: true,
-                contexts: []
+                contexts: [
+                    'Code analysis',
+                    'Unit test',
+                    'Integration test'
+                ]
             },
             // admins must be able to fix compliance issues
             enforce_admins: false,
