@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: trilogy-group/eng-template
-          token: ${{ secrets.ENG_STD_TOKEN }}
+          token: ${{ secrets.TEMPLATE_GITHUB_TOKEN }}
           path: template
 
       - name: Release
