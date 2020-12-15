@@ -14,19 +14,19 @@ export class MainIsAlwaysReleasable extends Rule {
     }
 
     async checkPullRequestsAreAlwaysReadyToMerge(product: Product) {
-        await this.requireWorkflow(product, 'pr-rebase');
+        await this.requireWorkflow(product, 'rebase');
     }
 
     async fixPullRequestsAreAlwaysReadyToMerge(product: Product) {
-        await this.fixWorkflow(product, 'pr-rebase');
+        await this.fixWorkflow(product, 'rebase');
     }
 
     async checkDoContinuousIntegrationBeforeMerge(product: Product) {
-        await this.requireWorkflow(product, 'pr-verify');
+        await this.requireWorkflow(product, 'verify');
     }
 
     async fixDoContinuousIntegrationBeforeMerge(product: Product) {
-        await this.fixWorkflow(product, 'pr-verify');
+        await this.fixWorkflow(product, 'verify');
     }
 
     async checkPullRequestsMustBeReviewed(product: Product) {
