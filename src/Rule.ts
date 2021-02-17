@@ -7,13 +7,11 @@ import assert from "assert";
 export abstract class Rule {
 
     abstract readonly id: string;
-    readonly repair: boolean;
+    readonly repair = process.env.repair == 'true';
 
     constructor(
         protected readonly octokit: Octokit
     ) {
-        this.octokit = octokit;
-        this.repair = process.env.repair == 'true';
     }
 
     async requireWorkflow(product: Product, workflowFileName: string): Promise<void> {
@@ -27,7 +25,8 @@ export abstract class Rule {
         const workflowFile:any = await this.octokit.repos.getContent({
             owner: product.repo.owner,
             repo: product.repo.name,
-            path: workflowFilePath
+            path: workflowFilePath,
+            ref: product.branch
         }).then(response => response.data);
         const workflowContent = Buffer.from(workflowFile.content, 'base64').toString('utf8');
         const templateContent = this.getTemplateFileContent(workflowFilePath);
@@ -45,9 +44,11 @@ export abstract class Rule {
         const workflowFile:any = await this.octokit.repos.getContent({
             owner: product.repo.owner,
             repo: product.repo.name,
-            path: workflowFilePath
-        }).then(response => response.data)
-        .catch(_ => null);
+            path: workflowFilePath,
+            ref: product.branch
+        })
+            .then(response => response.data)
+            .catch(_ => null);
 
         // update the workflow file
         await this.updateFile({
@@ -70,9 +71,10 @@ export abstract class Rule {
             owner: options.product.repo.owner,
             repo: options.product.repo.name,
             message: `Update to Engineering Standards`,
-            path: encodeURIComponent(options.path),
+            path: options.path,
             content: Buffer.from(options.content).toString('base64'),
-            sha: options.sha
+            sha: options.sha,
+            branch: options.product.branch
         });
     }
 

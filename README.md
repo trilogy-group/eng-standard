@@ -12,3 +12,9 @@ The process is:
 * Project is built and packaged
 * Release artefacts appear under the repo tag latest
 * Projects refer to this repository as **trilogy-group/eng-standard@latest**
+
+# Permissions
+
+This action requires an admin token from Github in order to fix the found issues automatically. The image below illustrates these permissions - please apply them carefully to prevent hard-to-track permission issues:
+
+<img width="774" alt="Github Action necessary permissions" src="https://user-images.githubusercontent.com/10912950/108193493-43fe4300-70f4-11eb-880c-611ca44cf4ce.png">
