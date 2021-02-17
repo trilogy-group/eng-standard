@@ -7,7 +7,8 @@ inputs:
     required: false
   branch:
     description: 'The full name (e.g. refs/heads/branch) of the target branch'
-    required: true
+    default: ${{ github.head_ref }}
+    required: false
   repair:
     description: 'Repair issues that we can'
     default: "true"
