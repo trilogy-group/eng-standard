@@ -5,6 +5,10 @@ inputs:
     description: 'Repository name with owner. For example, trilogy-group/sococo'
     default: ${{ github.repository }}
     required: false
+  branch:
+    description: 'The full name (e.g. refs/heads/branch) of the target branch'
+    default: ${GITHUB_REF}
+    required: false
   repair:
     description: 'Repair issues that we can'
     default: "true"

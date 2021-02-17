@@ -3,9 +3,9 @@ import { Repo } from "./Repo";
 export class Product {
 
     constructor(
-        readonly repo: Repo
+        readonly repo: Repo,
+        readonly branch: string
     ) {
-        this.repo = repo;
     }
 
     toString(): string {

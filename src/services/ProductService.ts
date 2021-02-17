@@ -11,11 +11,11 @@ export class ProductService {
         this.gitHubService = gitHubService;
     }
 
-    async loadProduct(): Promise<Product> {
+    async loadProduct(branch: string): Promise<Product> {
         return Promise.all([
             this.gitHubService.loadRepository()
         ]).then(([ repo ]) =>
-            new Product(repo)
+            new Product(repo, branch)
         );
     }
 

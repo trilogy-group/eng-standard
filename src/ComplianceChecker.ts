@@ -16,13 +16,12 @@ export class ComplianceChecker {
         @inject('rules') private readonly rules: Rule[],
         private readonly productService: ProductService
     ) {
-        this.rules = rules;
-        this.productService = productService;
     }
 
     async main() {
         const doRepair = process.env.INPUT_REPAIR == 'true';
-        let product = await this.productService.loadProduct();
+        const branch = String(process.env.INPUT_BRANCH);
+        let product = await this.productService.loadProduct(branch);
 
         let passing = true;
         for(const rule of this.rules) {
@@ -54,7 +53,7 @@ export class ComplianceChecker {
                     if (attempt == 0 && outcome != RESULT_PASS && doRepair && fixFunc) {
                         try {
                             await fixFunc.call(rule, product);
-                            product = await this.productService.loadProduct();
+                            product = await this.productService.loadProduct(branch);
                             outcome = null;
                             message = null;
                         } catch (repairError) {

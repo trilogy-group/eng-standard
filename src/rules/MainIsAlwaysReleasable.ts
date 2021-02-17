@@ -61,7 +61,7 @@ export class MainIsAlwaysReleasable extends Rule {
             mediaType: { previews: [ 'luke-cage' ] },
             owner: product.repo.owner,
             repo: product.repo.name,
-            branch: 'main',
+            branch: 'refs/heads/main',
             required_status_checks: {
                 strict: true,
                 contexts: [
