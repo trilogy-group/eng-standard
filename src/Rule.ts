@@ -70,7 +70,7 @@ export abstract class Rule {
             owner: options.product.repo.owner,
             repo: options.product.repo.name,
             message: `Update to Engineering Standards`,
-            path: options.path,
+            path: encodeURIComponent(options.path),
             content: Buffer.from(options.content).toString('base64'),
             sha: options.sha
         });
