@@ -47,8 +47,8 @@ export abstract class Rule {
             path: workflowFilePath,
             ref: product.branch
         })
-        .then(response => response.data)
-        .catch(_ => null);
+            .then(response => response.data)
+            .catch(_ => null);
 
         // update the workflow file
         await this.updateFile({
@@ -71,7 +71,7 @@ export abstract class Rule {
             owner: options.product.repo.owner,
             repo: options.product.repo.name,
             message: `Update to Engineering Standards`,
-            path: encodeURIComponent(options.path),
+            path: options.path,
             content: Buffer.from(options.content).toString('base64'),
             sha: options.sha,
             branch: options.product.branch
