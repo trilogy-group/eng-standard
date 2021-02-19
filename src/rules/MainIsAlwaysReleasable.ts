@@ -13,14 +13,6 @@ export class MainIsAlwaysReleasable extends Rule {
         super(octokit)
     }
 
-    async checkPullRequestsAreAlwaysReadyToMerge(product: Product) {
-        await this.requireWorkflow(product, 'rebase');
-    }
-
-    async fixPullRequestsAreAlwaysReadyToMerge(product: Product) {
-        await this.fixWorkflow(product, 'rebase');
-    }
-
     async checkDoContinuousIntegrationBeforeMerge(product: Product) {
         await this.requireWorkflow(product, 'verify');
     }
