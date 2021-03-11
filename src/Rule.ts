@@ -1,12 +1,13 @@
-import { Product } from "./model/Product";
 import { Octokit } from "@octokit/rest";
+import assert from "assert";
 import fs from "fs";
 import path from "path";
-import assert from "assert";
+
+import { Product } from "./model/Product";
+import { BranchProtection } from "./model/Repo";
 
 export abstract class Rule {
 
-    abstract readonly id: string;
     readonly repair = process.env.repair == 'true';
 
     constructor(
@@ -59,6 +60,11 @@ export abstract class Rule {
         });
     }
 
+    public requireStatusCheck(product: Product, statusCheckName: string, reason: string) {
+        const checks = product.mainProtection.required_status_checks.contexts;
+        assert(checks.includes(statusCheckName), reason);
+    }
+
     private getTemplateFileContent(workflowFilePath: string) {
         const appFileName = require.main?.filename;
         if (!appFileName) throw new Error('Cannot determine project location, require.main is undefined');
@@ -94,6 +100,9 @@ export function ruleHumanName(rule: Rule) {
 }
 
 export function checkHumanName(functionName: string) {
-    return camelToHuman(functionName.replace('check', ''));
+    return camelToHuman(functionName.replace('check', ''))
+        .toLowerCase()
+        .replace(/git hub/g, 'GitHub')
+        .replace(/ship every merge/g, 'Ship Every Merge');
 }
 

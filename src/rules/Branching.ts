@@ -6,9 +6,8 @@ import { Product } from "../model/Product";
 import { Rule } from "../Rule";
 
 @injectable()
-export class TrunkBasedDevelopment extends Rule {
+export class Branching extends Rule {
 
-    readonly id = 'ITD.BRANCH.1';
     readonly maxBranchAge = 48; // hours
 
     constructor(octokit: Octokit) {
@@ -94,14 +93,6 @@ export class TrunkBasedDevelopment extends Rule {
                     `branch ${branch.name} is more than ${this.maxBranchAge} hours old`);
             }
         }
-    }
-
-    async checkHasSemComplianceGithubCheck(product: Product) {
-        await this.requireWorkflow(product, 'engineering-standards');
-    }
-
-    async fixHasSemComplianceGithubCheck(product: Product) {
-        await this.fixWorkflow(product, 'engineering-standards');
     }
 
 }

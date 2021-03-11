@@ -31,7 +31,7 @@ export class ComplianceChecker {
             console.log(`\n${humanRuleNameVal}`);
 
             for(const [checkName, checkFunc] of this.listChecks(rule)) {
-                const humanCheckNameVal = humanCheckName(checkName).toLowerCase();
+                const humanCheckNameVal = humanCheckName(checkName);
                 const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
 
                 let outcome = null;
