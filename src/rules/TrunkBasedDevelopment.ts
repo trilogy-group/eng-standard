@@ -1,8 +1,9 @@
-import { injectable } from "tsyringe";
+import { Octokit } from "@octokit/rest";
 import assert from "assert";
+import { injectable } from "tsyringe";
+
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
-import { Octokit } from "@octokit/rest";
 
 @injectable()
 export class TrunkBasedDevelopment extends Rule {
@@ -21,6 +22,11 @@ export class TrunkBasedDevelopment extends Rule {
         const otherProtected = product.repo.branches.some(branch =>
             branch.protected && branch.name != mainBranch.name);
         assert(!otherProtected, 'the main branch must be the only protected branch');
+    }
+
+    async checkNoDevelopBranch(product: Product) {
+        const developBranch = product.repo.branches.find(branch => branch.name == 'develop')
+        assert(developBranch == null, 'there must be no develop branch')
     }
 
     async checkLinearCommitHistory(product: Product) {
