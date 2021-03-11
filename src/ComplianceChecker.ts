@@ -1,9 +1,11 @@
-import { injectable, inject } from "tsyringe";
-import { checkHumanName as humanCheckName, Rule, RuleCheck, ruleHumanName as humanRuleName } from "./Rule";
 import { AssertionError } from "assert";
-import './rules';
-import { ProductService } from "./services/ProductService";
 import Chalk from 'chalk';
+import { inject, injectable } from "tsyringe";
+
+import { checkHumanName as humanCheckName, ruleHumanName as humanRuleName, Rule, RuleCheck } from "./Rule";
+import { ProductService } from "./services/ProductService";
+
+import './rules';
 
 const RESULT_PASS = Chalk.green('✓');
 const RESULT_ERROR = Chalk.red('!');
@@ -19,8 +21,8 @@ export class ComplianceChecker {
     }
 
     async main() {
-        const doRepair = process.env.INPUT_REPAIR == 'true';
-        const branch = String(process.env.INPUT_BRANCH);
+        const doRepair = process.env.INPUT_REPAIR === 'true';
+        const branch = String(process.env.INPUT_BRANCH ?? 'main');
         let product = await this.productService.loadProduct(branch);
 
         let passing = true;
