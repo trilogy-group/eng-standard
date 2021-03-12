@@ -28,6 +28,22 @@ export class Branching extends Rule {
         assert(developBranch == null, 'there must be no develop branch')
     }
 
+    // TODO: NoFixBranchesOlderThanOneDay
+    // async checkNoFixBranchesOlderThanOneDay(product: Product) {
+    // }
+
+    // TODO: PullRequestsMergeToMain
+    // async checkPullRequestsMergeToMain(product: Product) {
+    // }
+
+    // Don't do this, because it'll fail every time a merge happens and that's ok
+    // async checkPullRequestsUpToDate(product: Product) {
+    // }
+
+    // Don't do this for products in development, because PCAs also need to make changes
+    // async checkBranchesFollowNamingConvention(product: Product) {
+    // }
+
     async checkLinearCommitHistory(product: Product) {
         assert(product.repo.settings.allow_squash_merge == true,
             'squash merge is disabled - squash merge must be the only merge type');
