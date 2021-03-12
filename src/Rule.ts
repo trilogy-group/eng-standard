@@ -27,7 +27,7 @@ export abstract class Rule {
             owner: product.repo.owner,
             repo: product.repo.name,
             path: workflowFilePath,
-            ref: product.branch
+            ref: product.repo.currentBranchName
         }).then(response => response.data);
         const workflowContent = Buffer.from(workflowFile.content, 'base64').toString('utf8');
         const templateContent = this.getTemplateFileContent(workflowFilePath);
@@ -46,7 +46,7 @@ export abstract class Rule {
             owner: product.repo.owner,
             repo: product.repo.name,
             path: workflowFilePath,
-            ref: product.branch
+            ref: product.repo.currentBranchName
         })
             .then(response => response.data)
             .catch(_ => null);
@@ -80,7 +80,7 @@ export abstract class Rule {
             path: options.path,
             content: Buffer.from(options.content).toString('base64'),
             sha: options.sha,
-            branch: options.product.branch
+            branch: options.product.repo.currentBranchName
         });
     }
 

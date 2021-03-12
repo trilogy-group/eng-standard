@@ -4,10 +4,12 @@ import { BranchProtection, Repo } from "./Repo";
 
 export class Product {
 
+    readonly name;
+
     constructor(
-        readonly repo: Repo,
-        readonly branch: string
+        readonly repo: Repo
     ) {
+        this.name = process.env.INPUT_PRODUCT_NAME ?? this.repo.name;
     }
 
     public get mainProtection(): BranchProtection {

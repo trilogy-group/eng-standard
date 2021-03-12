@@ -8,7 +8,8 @@ export type BranchProtection = components["schemas"]["branch-protection"];
 
 export class Repo {
 
-    public readonly id: string;
+    readonly id: string;
+    readonly currentBranchName: string;
 
     constructor(
         readonly owner: string,
@@ -26,6 +27,7 @@ export class Repo {
         this.workflows = workflows.filter(workflow => workflow.state === 'active');
         this.branches = branches;
         this.mainBranch = mainBranch;
+        this.currentBranchName = process.env.INPUT_BRANCH ?? 'main';
 
         // attributes are missing unless we get protection separately
         if (mainBranch && mainBranchProtection) {

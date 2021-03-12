@@ -27,15 +27,14 @@ export class ComplianceChecker {
 
     async main() {
         const doRepair = process.env.INPUT_REPAIR === 'true';
-        const branch = String(process.env.INPUT_BRANCH ?? 'main');
 
         const reporters: Reporter[] = [ new ConsoleReporter() ]
-        if (process.env.INPUT_TIMESTREAM_DB != null) {
+        if (TimestreamReporter.enabled()) {
             reporters.push(new TimestreamReporter())
         }
         const reporter = new MultiReporter(reporters);
 
-        let product = await this.productService.loadProduct(branch);
+        let product = await this.productService.loadProduct();
 
         reporter.startRun(product);
         let passing = true;
@@ -71,7 +70,7 @@ export class ComplianceChecker {
                     if (attempt == 0 && outcome != Result.PASS && doRepair && fixFunc) {
                         try {
                             await fixFunc.call(rule, product);
-                            product = await this.productService.loadProduct(branch);
+                            product = await this.productService.loadProduct();
                             outcome = undefined;
                             message = undefined;
                         } catch (repairError) {

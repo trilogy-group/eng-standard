@@ -32,6 +32,10 @@ export class TimestreamReporter extends Reporter {
     this.table = process.env.INPUT_TIMESTREAM_TABLE as string;
   }
 
+  static enabled(): boolean {
+    return process.env.INPUT_TIMESTREAM_DB != null;
+  }
+
   startRun(product: Product) {
     this.product = product;
     this.records = [];
@@ -88,6 +92,7 @@ export class TimestreamReporter extends Reporter {
       Records: this.records,
       CommonAttributes: {
         Dimensions: [
+          { Name: 'product', Value: this.product.name },
           { Name: 'repo', Value: this.product.repo.name }
         ],
         Time: Date.now().toString()

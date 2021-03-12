@@ -1,4 +1,5 @@
 import { injectable } from "tsyringe";
+
 import { Product } from "../model/Product";
 import { GitHubService } from "./GitHubService";
 
@@ -11,12 +12,9 @@ export class ProductService {
         this.gitHubService = gitHubService;
     }
 
-    async loadProduct(branch: string): Promise<Product> {
-        return Promise.all([
-            this.gitHubService.loadRepository()
-        ]).then(([ repo ]) =>
-            new Product(repo, branch)
-        );
+    async loadProduct(): Promise<Product> {
+        const repo = await this.gitHubService.loadRepository();
+        return new Product(repo);
     }
 
 }
