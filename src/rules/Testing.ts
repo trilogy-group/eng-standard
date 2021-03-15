@@ -13,11 +13,11 @@ export class Testing extends Rule {
     }
 
     async checkCodeAnalysisPassesBeforeMerge(product: Product) {
-        this.requireStatusCheck(product, 'Code analysis');
+        this.requireStatusCheck(product, 'Analyze');
     }
 
     async checkUnitTestsPassBeforeMerge(product: Product) {
-        this.requireStatusCheck(product, 'Unit test');
+        this.requireStatusCheck(product, 'Test');
     }
     
     async checkIntegrationTestsPassBeforeMerge(product: Product) {
