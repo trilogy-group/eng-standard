@@ -44,10 +44,10 @@ export class ComplianceChecker {
             product.repo = await this.gitHubService.loadRepository()
         } catch (error) {
             const remediation = 'check repo location and grant trilogy-eng-standards access';
-            reporter.startRule('Definition');
-            reporter.startCheck('Definition', 'repository defined');
-            reporter.reportCheck('Definition', 'repository defined', Result.FAIL, remediation);
-            reporter.reportRule('Definition', Result.FAIL);
+            reporter.startRule('Setup');
+            reporter.startCheck('Setup', 'product is setup for compliance checks');
+            reporter.reportCheck('Setup', 'product is setup for compliance checks', Result.FAIL, remediation);
+            reporter.reportRule('Setup', Result.FAIL);
             passing = false;
         }
 

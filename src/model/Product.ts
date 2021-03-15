@@ -9,7 +9,7 @@ export class Product {
 
     constructor(
     ) {
-        this.name = process.env.INPUT_PRODUCT_NAME ?? this.repo.name;
+        this.name = process.env.INPUT_PRODUCT_NAME ?? 'unknown';
     }
 
     public get mainProtection(): BranchProtection {

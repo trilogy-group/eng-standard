@@ -60,8 +60,8 @@ export abstract class Rule {
     }
 
     public requireStatusCheck(product: Product, statusCheckName: string) {
-        const checks = product.mainProtection.required_status_checks.contexts;
-        assert(checks.includes(statusCheckName), `set pull requests to require that ${statusCheckName} passes`);
+        const checks = product.mainProtection?.required_status_checks?.contexts;
+        assert(checks?.includes(statusCheckName), `set pull requests to require that ${statusCheckName} passes`);
     }
 
     private getTemplateFileContent(workflowFilePath: string) {
