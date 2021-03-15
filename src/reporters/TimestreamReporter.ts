@@ -86,15 +86,19 @@ export class TimestreamReporter extends Reporter {
   }
 
   async publishRecords(): Promise<void> {
+    const dimensions = [
+      { Name: 'product', Value: this.product.name }
+    ];
+    if (this.product.repo != null) {
+      dimensions.push({ Name: 'repo', Value: this.product.repo.name })
+    }
+
     const cmd = new WriteRecordsCommand({
       DatabaseName: this.db,
       TableName: this.table,
       Records: this.records,
       CommonAttributes: {
-        Dimensions: [
-          { Name: 'product', Value: this.product.name },
-          { Name: 'repo', Value: this.product.repo.name }
-        ],
+        Dimensions: dimensions,
         Time: Date.now().toString()
       }
     });

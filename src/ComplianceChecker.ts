@@ -1,14 +1,16 @@
 import { AssertionError } from "assert";
 import { inject, injectable } from "tsyringe";
 
+import { RequestError } from "@octokit/request-error";
 import { ConsoleReporter } from './reporters/ConsoleReporter';
 import { MultiReporter } from './reporters/MultiReporter';
 import { Reporter } from "./reporters/Reporter";
 import { TimestreamReporter } from './reporters/TimestreamReporter';
 import { checkHumanName as humanCheckName, ruleHumanName as humanRuleName, Rule, RuleCheck } from "./Rule";
-import { ProductService } from "./services/ProductService";
+import { GitHubService } from "./services/GitHubService";
 
 import './rules';
+import { Product } from "./model/Product";
 
 export const enum Result {
     PASS,
@@ -21,7 +23,7 @@ export class ComplianceChecker {
 
     constructor(
         @inject('rules') private readonly rules: Rule[],
-        private readonly productService: ProductService
+        private readonly gitHubService: GitHubService
     ) {
     }
 
@@ -34,57 +36,69 @@ export class ComplianceChecker {
         }
         const reporter = new MultiReporter(reporters);
 
-        let product = await this.productService.loadProduct();
-
+        const product = new Product();
         reporter.startRun(product);
         let passing = true;
 
-        for(const rule of this.rules) {
-            const humanRuleNameVal = humanRuleName(rule);
-            reporter.startRule(humanRuleNameVal);
-            let rulePassing = true;
+        try {
+            product.repo = await this.gitHubService.loadRepository()
+        } catch (error) {
+            const remediation = 'check repo location and grant trilogy-eng-standards access';
+            reporter.startRule('Definition');
+            reporter.startCheck('Definition', 'repository defined');
+            reporter.reportCheck('Definition', 'repository defined', Result.FAIL, remediation);
+            reporter.reportRule('Definition', Result.FAIL);
+            passing = false;
+        }
 
-            for(const [checkName, checkFunc] of this.listChecks(rule)) {
-                const humanCheckNameVal = humanCheckName(checkName);
-                const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
-                reporter.startCheck(humanRuleNameVal, humanCheckNameVal);
+        if (product.repo != null) {
+            for(const rule of this.rules) {
+                const humanRuleNameVal = humanRuleName(rule);
+                reporter.startRule(humanRuleNameVal);
+                let rulePassing = true;
 
-                let outcome;
-                let message;
-                for(let attempt = 0; outcome == null; attempt++) {
-                    // check the status
-                    try {
-                        await checkFunc.call(rule, product);
-                        outcome = Result.PASS;
-                    } catch (error) {
-                        if (error instanceof AssertionError) {
-                            outcome = Result.FAIL;
-                            message = error.message;
-                        } else {
-                            outcome = Result.ERROR;
-                            message = `${humanCheckNameVal}: ${error.message}`;
-                        }
-                    }
+                for(const [checkName, checkFunc] of this.listChecks(rule)) {
+                    const humanCheckNameVal = humanCheckName(checkName);
+                    const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
+                    reporter.startCheck(humanRuleNameVal, humanCheckNameVal);
 
-                    // try to repair it
-                    if (attempt == 0 && outcome != Result.PASS && doRepair && fixFunc) {
+                    let outcome;
+                    let message;
+                    for(let attempt = 0; outcome == null; attempt++) {
+                        // check the status
                         try {
-                            await fixFunc.call(rule, product);
-                            product = await this.productService.loadProduct();
-                            outcome = undefined;
-                            message = undefined;
-                        } catch (repairError) {
-                            message += ` and repair failed with ${repairError}`;
+                            await checkFunc.call(rule, product);
+                            outcome = Result.PASS;
+                        } catch (error) {
+                            if (error instanceof AssertionError) {
+                                outcome = Result.FAIL;
+                                message = error.message;
+                            } else {
+                                outcome = Result.ERROR;
+                                message = `${humanCheckNameVal}: ${error.message}`;
+                            }
+                        }
+
+                        // try to repair it
+                        if (attempt == 0 && outcome != Result.PASS && doRepair && fixFunc) {
+                            try {
+                                await fixFunc.call(rule, product);
+                                product.repo = await this.gitHubService.loadRepository();
+                                outcome = undefined;
+                                message = undefined;
+                            } catch (repairError) {
+                                message += ` and repair failed with ${repairError}`;
+                            }
                         }
                     }
+
+                    reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, outcome, message);
+                    rulePassing &&= (outcome == Result.PASS);
                 }
 
-                reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, outcome, message);
-                rulePassing &&= (outcome == Result.PASS);
+                reporter.reportRule(humanRuleNameVal, rulePassing ? Result.PASS : Result.FAIL);
+                passing &&= rulePassing;
             }
-
-            reporter.reportRule(humanRuleNameVal, rulePassing ? Result.PASS : Result.FAIL);
-            passing &&= rulePassing;
         }
 
         reporter.reportRun(product, passing ? Result.PASS : Result.FAIL);

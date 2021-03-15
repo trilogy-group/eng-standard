@@ -15,13 +15,12 @@ export class Reviewing extends Rule {
     async checkPullRequestsMustBeReviewed(product: Product) {
         const reviews = product.mainProtection.required_pull_request_reviews;
         assert(reviews,
-            'main branch must require one pull request review before merging');
-        assert(reviews.required_approving_review_count,
-            'main branch must require one pull request review before merging');
-        assert(reviews.required_approving_review_count > 0,
-            'main branch must require one pull request review before merging');
+            'enable pull request reviews on main branch');
+        assert(reviews.required_approving_review_count
+            && reviews.required_approving_review_count > 0,
+            'set pull request reviews on main branch to require at least one approval');
         assert(reviews.dismiss_stale_reviews,
-            'main branch must be set to dismiss stale reviews');
+            'set pull request reviews on main branch to dismiss stale reviews');
     }
 
     // async fixPullRequestsMustBeReviewed(product: Product) {

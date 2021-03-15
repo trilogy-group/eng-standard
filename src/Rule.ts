@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 
 import { Product } from "./model/Product";
-import { BranchProtection } from "./model/Repo";
 
 export abstract class Rule {
 
@@ -19,7 +18,7 @@ export abstract class Rule {
         const workflowFilePath = `.github/workflows/${workflowFileName}.yml`;
 
         const workflow = product.repo.workflows.find(workflow => workflow.path == workflowFilePath);
-        assert(workflow, `workflow ${workflowFileName}.yml must be defined`);
+        assert(workflow, `add workflow ${workflowFileName}.yml from the template`);
 
         // get the workflow file contents
         // use any because the types are broken: cannot handle both array and singular types
@@ -33,7 +32,7 @@ export abstract class Rule {
         const templateContent = this.getTemplateFileContent(workflowFilePath);
 
         // check that it matches the template
-        assert(workflowContent == templateContent, `workflow ${workflowFileName}.yml must match the template`);
+        assert(workflowContent == templateContent, `update workflow ${workflowFileName}.yml to match the template`);
     }
 
     async fixWorkflow(product: Product, workflowFileName: string): Promise<void> {
@@ -60,9 +59,9 @@ export abstract class Rule {
         });
     }
 
-    public requireStatusCheck(product: Product, statusCheckName: string, reason: string) {
+    public requireStatusCheck(product: Product, statusCheckName: string) {
         const checks = product.mainProtection.required_status_checks.contexts;
-        assert(checks.includes(statusCheckName), reason);
+        assert(checks.includes(statusCheckName), `set pull requests to require that ${statusCheckName} passes`);
     }
 
     private getTemplateFileContent(workflowFilePath: string) {

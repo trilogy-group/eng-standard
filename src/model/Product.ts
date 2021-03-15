@@ -5,9 +5,9 @@ import { BranchProtection, Repo } from "./Repo";
 export class Product {
 
     readonly name;
+    repo!: Repo;
 
     constructor(
-        readonly repo: Repo
     ) {
         this.name = process.env.INPUT_PRODUCT_NAME ?? this.repo.name;
     }

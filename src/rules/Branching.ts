@@ -16,16 +16,16 @@ export class Branching extends Rule {
 
     async checkOneMainBranch(product: Product) {
         const mainBranch = product.repo.mainBranch;
-        assert(mainBranch, 'a main branch must exist');
+        assert(mainBranch, 'create a main branch');
 
-        const otherProtected = product.repo.branches.some(branch =>
+        const otherProtected = product.repo.branches.find(branch =>
             branch.protected && branch.name != mainBranch.name);
-        assert(!otherProtected, 'the main branch must be the only protected branch');
+        assert(otherProtected == null, `remove or unprotect branch ${otherProtected?.name}`);
     }
 
     async checkNoDevelopBranch(product: Product) {
         const developBranch = product.repo.branches.find(branch => branch.name == 'develop')
-        assert(developBranch == null, 'there must be no develop branch')
+        assert(developBranch == null, 'remove the develop branch')
     }
 
     // TODO: NoFixBranchesOlderThanOneDay
@@ -45,12 +45,9 @@ export class Branching extends Rule {
     // }
 
     async checkLinearCommitHistory(product: Product) {
-        assert(product.repo.settings.allow_squash_merge == true,
-            'squash merge is disabled - squash merge must be the only merge type');
-        assert(product.repo.settings.allow_merge_commit == false,
-            'merge commit is enabled - squash merge must be the only merge type');
-        assert(product.repo.settings.allow_rebase_merge == false,
-            'rebase merge is enabled - squash merge must be the only merge type');
+        assert(product.repo.settings.allow_squash_merge == true, 'enable squash merge');
+        assert(product.repo.settings.allow_merge_commit == false, 'disable merge commit');
+        assert(product.repo.settings.allow_rebase_merge == false, 'disable rebase merge');
     }
 
     async fixLinearCommitHistory(product: Product) {
@@ -66,7 +63,7 @@ export class Branching extends Rule {
 
     async checkDeleteBranchAfterPullRequestMerged(product: Product) {
         assert(product.repo.settings.delete_branch_on_merge,
-            'delete branch on merge must be set');
+            'enable delete-branch-on-merge setting');
     }
 
     async fixDeleteBranchAfterPullRequestMerged(product: Product) {
@@ -79,7 +76,7 @@ export class Branching extends Rule {
 
     async checkOnlyShortLivedBranches(product: Product) {
         const mainBranch = product.repo.mainBranch;
-        assert(mainBranch, 'a main branch must exist');
+        assert(mainBranch, 'create a main branch');
 
         const unprotectedBranches = product.repo.branches.filter(branch =>
             !branch.protected && branch.name != mainBranch.name);
@@ -88,7 +85,7 @@ export class Branching extends Rule {
         earliestBranchAge.setHours(earliestBranchAge.getHours() - this.maxBranchAge);
 
         for(const branch of unprotectedBranches) {
-            assert(branch.name, 'all branches must be named');
+            assert(branch.name, 'ensure all branches are named');
 
             const diff = await this.octokit.repos.compareCommits({
                 owner: product.repo.owner,
@@ -106,7 +103,7 @@ export class Branching extends Rule {
             if (commitDate) {
                 const branchCreationDate = new Date(commitDate);
                 assert(branchCreationDate >= earliestBranchAge,
-                    `branch ${branch.name} is more than ${this.maxBranchAge} hours old`);
+                    `remove branch ${branch.name} which is older than ${this.maxBranchAge} hours`);
             }
         }
     }

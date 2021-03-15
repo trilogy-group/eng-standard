@@ -12,24 +12,16 @@ export class Testing extends Rule {
         super(octokit)
     }
 
-    async checkChecksShipEveryMergeCompliance(product: Product) {
-        await this.requireWorkflow(product, 'engineering-standards');
-    }
-
-    async fixChecksShipEveryMergeCompliance(product: Product) {
-        await this.fixWorkflow(product, 'engineering-standards');
-    }
-
     async checkCodeAnalysisPassesBeforeMerge(product: Product) {
-        this.requireStatusCheck(product, 'Code analysis', 'must check that static code analysis passes');
+        this.requireStatusCheck(product, 'Code analysis');
     }
 
     async checkUnitTestsPassBeforeMerge(product: Product) {
-        this.requireStatusCheck(product, 'Unit test', 'must check that unit tests pass');
+        this.requireStatusCheck(product, 'Unit test');
     }
     
     async checkIntegrationTestsPassBeforeMerge(product: Product) {
-        this.requireStatusCheck(product, 'Integration test', 'must check that integration tests pass');
+        this.requireStatusCheck(product, 'Integration test');
     }
 
     // TODO: UnitTestsHaveFullCoverage
