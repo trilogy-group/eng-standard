@@ -8,7 +8,7 @@ import { Rule } from "../Rule";
 @injectable()
 export class Branching extends Rule {
 
-    readonly maxBranchAge = 48; // hours
+    readonly maxBranchAge = 72; // hours
 
     constructor(octokit: Octokit) {
         super(octokit)
