@@ -18,6 +18,9 @@ export class Deploying extends Rule {
 
     // TODO: BlueGreenDeployments
     // async checkBlueGreenDeployments(product: Product) {
+        // is this implied by using deploy-prod and eng-base-ts?
+        // we know Sococo is using these, but doesn't actually have blue-green
+        // to differentiate, we need to interrogate the blue-green analytics database
     // }
 
 }
