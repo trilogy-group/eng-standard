@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "clean": "rm -rf dist",
     "prebuild": "bin/get-template.sh; npm install",
     "build": "tsc && ncc build lib/main.js -o dist",
     "start": "ts-node src/main.ts"
@@ -12,6 +13,7 @@
   "devDependencies": {
     "@aws-sdk/client-timestream-write": "^3.8.0",
     "@octokit/rest": "^18.0.9",
+    "@tsconfig/node12": "^1.0.7",
     "@vercel/ncc": "^0.25.1",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
