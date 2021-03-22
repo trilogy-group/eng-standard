@@ -21,14 +21,7 @@ export abstract class Rule {
         assert(workflow, `add workflow ${workflowFileName}.yml from the template`);
 
         // get the workflow file contents
-        // use any because the types are broken: cannot handle both array and singular types
-        const workflowFile:any = await this.octokit.repos.getContent({
-            owner: product.repo.owner,
-            repo: product.repo.name,
-            path: workflowFilePath,
-            ref: product.repo.currentBranchName
-        }).then(response => response.data);
-        const workflowContent = Buffer.from(workflowFile.content, 'base64').toString('utf8');
+        const workflowContent = await this.getRepoFileContent(product, workflowFilePath);
         const templateContent = this.getTemplateFileContent(workflowFilePath);
 
         // check that it matches the template
@@ -69,6 +62,21 @@ export abstract class Rule {
         if (!appFileName) throw new Error('Cannot determine project location, require.main is undefined');
         const appDir = path.dirname(path.dirname(appFileName));
         return fs.readFileSync(`${appDir}/template/${workflowFilePath}`, { encoding: 'utf8' });
+    }
+
+    async getRepoFileContent(product: Product, filePath: string) {
+        const fileResponse = await this.octokit.repos.getContent({
+            owner: product.repo.owner,
+            repo: product.repo.name,
+            path: filePath,
+            ref: product.repo.currentBranchName
+        }).then(response => response.data) as {content ?: string};
+
+        if (fileResponse.content == null) {
+            throw new Error(`File ${filePath} does not exist or could not be accessed`)
+        }
+
+        return Buffer.from(fileResponse.content, 'base64').toString('utf8');
     }
 
     async updateFile(options: { product: Product; path: string; content: string; sha?: string; }): Promise<void> {

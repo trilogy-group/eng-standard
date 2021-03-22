@@ -17,8 +17,9 @@ export class Repo {
         readonly settings: FullRepository,
         readonly workflows: Workflow[],
         readonly branches: BranchShort[],
-        readonly mainBranch?: BranchWithProtection,
-        readonly mainBranchProtection?: BranchProtection,
+        readonly mainBranch: BranchWithProtection | undefined,
+        readonly mainBranchProtection: BranchProtection | undefined,
+        readonly keyFiles: string[]
     ) {
         this.id = `${owner}/${name}`;
         this.owner = owner;

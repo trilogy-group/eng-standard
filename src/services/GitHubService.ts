@@ -1,10 +1,13 @@
 import { Octokit } from "@octokit/rest";
 import { injectable } from "tsyringe";
+
 import { Repo } from "../model/Repo";
 
 @injectable()
 export class GitHubService {
-    
+
+    KEY_FILES = ['jest.config.json', 'build.gradle.kts'];
+
     constructor(
         private readonly octokit: Octokit
     ) {
@@ -56,10 +59,14 @@ export class GitHubService {
                 repo: name,
                 branch: 'main',
             }).then(response => response.data)
-            .catch(this.handleError)
+            .catch(this.handleError),
 
-        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection ]) =>
-            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection)
+            this.octokit.search.code({
+                q: `repo:${repoId} ` + this.KEY_FILES.map(f => `filename:${f}`).join(' '),
+            }).then(response => response.data.items.map(file => file.path))
+
+        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection, keyFiles ]) =>
+            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection, keyFiles)
         );
     }
 
