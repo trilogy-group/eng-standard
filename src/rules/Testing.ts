@@ -26,7 +26,7 @@ export class Testing extends Rule {
     }
 
     async checkUnitTestsHaveFullCoverage(product: Product) {
-        const whitelist = [ /test/, /buildSrc/, /^build.gradle.kts$/, /^cdk/, /^tools/ ]
+        const whitelist = [ /test/, /buildSrc/, /^build.gradle.kts$/, /^cdk/, /^tools/, /deployment/, /integration/ ]
 
         // Jest for Typescript projects
         const allJestConfigs = product.repo.keyFiles.filter(file =>
