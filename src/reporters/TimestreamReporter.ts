@@ -44,7 +44,7 @@ export class TimestreamReporter extends Reporter {
   reportCheck(ruleName: string, checkName: string, outcome: Result, message?: string) {
     const dimensions = [];
     if (message) {
-      dimensions.push({ Name: 'reason', Value: message.replace(/[\/]/g, '_').replace(/%/g, '') })
+      dimensions.push({ Name: 'reason', Value: message.replace(/[\/]/g, '_') })
     }
 
     this.records.push({
@@ -106,7 +106,7 @@ export class TimestreamReporter extends Reporter {
     try {
       const endpoint = await this.getTimestreamEndpoint(this.region);
       const writer = new TimestreamWriteClient({ endpoint });
-      writer.send(cmd)
+      await writer.send(cmd)
     } catch (error) {
       console.error('Error writing to Timestream', error);
     }
