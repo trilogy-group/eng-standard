@@ -103,7 +103,7 @@ export interface RuleCheck {
 }
 
 function camelToHuman(camelStr: string) {
-    return camelStr.replace(/(?=[A-Z])/g, ' ').trim();
+    return camelStr.replace(/((?=[A-Z])|(?<![0-9])(?=[0-9]))/g, ' ').trim();
 }
 
 export function ruleHumanName(rule: Rule) {
