@@ -44,7 +44,7 @@ export class TimestreamReporter extends Reporter {
   reportCheck(ruleName: string, checkName: string, outcome: Result, message?: string) {
     const dimensions = [];
     if (message) {
-      dimensions.push({ Name: 'reason', Value: message.replace(/[\/]/g, '_') })
+      dimensions.push({ Name: 'reason', Value: message.replace(/[\/]/g, '_').replace(/%/g, '') })
     }
 
     this.records.push({
