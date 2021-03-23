@@ -17,7 +17,7 @@ export class ConsoleReporter extends Reporter {
         switch (result) {
             case Result.PASS: return '✓';
             case Result.FAIL: return '✗';
-            case Result.WARN: return '✗';
+            case Result.WARN: return '-';
             case Result.ERROR: return '!';
         }
     }
