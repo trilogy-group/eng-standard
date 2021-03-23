@@ -51,13 +51,13 @@ export class Testing extends Rule {
         for (const configFile of allGradleConfigs) {
             const gradleConfig = await this.getRepoFileContent(product, configFile);
             assert(/limit { counter = "INSTRUCTION"; minimum = BigDecimal.ONE }/.test(gradleConfig),
-                `add to ${configFile} test coverage: limit { counter = "INSTRUCTION"; minimum = BigDecimal.ONE }`)
+                `add to ${configFile} instruction test coverage to 100%`)
             assert(/limit { counter = "BRANCH"; minimum = BigDecimal.ONE }/.test(gradleConfig),
-                `add to ${configFile} test coverage: limit { counter = "BRANCH"; minimum = BigDecimal.ONE }`)
+                `add to ${configFile} branch test coverage to 100%`)
             assert(/limit { counter = "CLASS"; minimum = BigDecimal.ONE }/.test(gradleConfig),
-                `add to ${configFile} test coverage: limit { counter = "CLASS"; minimum = BigDecimal.ONE }`)
+                `add to ${configFile} class test coverage to 100%`)
             assert(/limit { counter = "METHOD"; minimum = BigDecimal.ONE }/.test(gradleConfig),
-                `add to ${configFile} test coverage: limit { counter = "METHOD"; minimum = BigDecimal.ONE }`)
+                `add to ${configFile} method test coverage to 100%`)
         }
 
         // ensure we have some test configuration
