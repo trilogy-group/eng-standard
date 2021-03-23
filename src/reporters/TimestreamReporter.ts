@@ -55,8 +55,8 @@ export class TimestreamReporter extends Reporter {
         ...dimensions
       ],
       MeasureName: `${ruleName} - ${checkName}`,
-      MeasureValue: String(outcome === Result.PASS),
-      MeasureValueType: 'BOOLEAN'
+      MeasureValue: Result[outcome],
+      MeasureValueType: 'VARCHAR'
     });
   }
 
@@ -67,8 +67,8 @@ export class TimestreamReporter extends Reporter {
         { Name: 'rule', Value: ruleName }
       ],
       MeasureName: ruleName,
-      MeasureValue: String(outcome === Result.PASS),
-      MeasureValueType: 'BOOLEAN'
+      MeasureValue: Result[outcome],
+      MeasureValueType: 'VARCHAR'
     });
   }
 
@@ -78,8 +78,8 @@ export class TimestreamReporter extends Reporter {
         { Name: 'level', Value: 'repo' }
       ],
       MeasureName: 'repo',
-      MeasureValue: String(outcome === Result.PASS),
-      MeasureValueType: 'BOOLEAN'
+      MeasureValue: Result[outcome],
+      MeasureValueType: 'VARCHAR'
     });
 
     this.publishRecords();

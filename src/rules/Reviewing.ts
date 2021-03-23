@@ -1,6 +1,7 @@
 import { Octokit } from "@octokit/rest";
 import assert from "assert";
 import { injectable } from "tsyringe";
+import { check } from "../check";
 
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
@@ -12,6 +13,7 @@ export class Reviewing extends Rule {
         super(octokit)
     }
 
+    @check({ mandatory: true })
     async checkPullRequestsMustBeReviewed(product: Product) {
         const reviews = product.mainProtection.required_pull_request_reviews;
         assert(reviews,

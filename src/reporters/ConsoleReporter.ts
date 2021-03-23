@@ -13,16 +13,35 @@ export class ConsoleReporter extends Reporter {
         console.log(`${this.renderCheckOutcome(outcome)} ${message ?? checkName}`);
     }
 
-    renderCheckOutcome(result: Result) {
+    symbol(result: Result): string {
         switch (result) {
-            case Result.PASS: return Chalk.green('✓');
-            case Result.FAIL: return Chalk.red('✗');
-            case Result.ERROR: return Chalk.red('!');
+            case Result.PASS: return '✓';
+            case Result.FAIL: return '✗';
+            case Result.WARN: return '✗';
+            case Result.ERROR: return '!';
         }
     }
 
+    color(result: Result): Chalk.Chalk {
+        switch (result) {
+            case Result.PASS: return Chalk.green;
+            case Result.FAIL: return Chalk.red;
+            case Result.WARN: return Chalk.yellow;
+            case Result.ERROR: return Chalk.red;
+        }
+    }
+
+    renderCheckOutcome(result: Result): string {
+        return this.color(result)(this.symbol(result));
+    }
+
+    renderOverallOutcome(result: Result): string {
+        return Chalk.inverse(this.color(result)(Result[result]));
+    }
+
     reportRun(product: Product, outcome: Result) {
-        console.log(`\n${Chalk.inverse(outcome == Result.PASS ? Chalk.green('PASS') : Chalk.red('FAIL'))}`);
+        const outcomeText = this.renderOverallOutcome(outcome);
+        console.log(`\n${Chalk.inverse(outcomeText)}`);
     }
 
 }

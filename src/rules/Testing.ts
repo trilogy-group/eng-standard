@@ -2,6 +2,7 @@ import { Octokit } from "@octokit/rest";
 import assert from "assert";
 import { injectable } from "tsyringe";
 import YAML from "yaml";
+import { check } from "../check";
 
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
@@ -13,18 +14,22 @@ export class Testing extends Rule {
         super(octokit)
     }
 
+    @check({ mandatory: true })
     async checkCodeAnalysisPassesBeforeMerge(product: Product) {
         this.requireStatusCheck(product, 'Analyze');
     }
 
+    @check({ mandatory: true })
     async checkUnitTestsPassBeforeMerge(product: Product) {
         this.requireStatusCheck(product, 'Test');
     }
     
+    @check({ mandatory: true })
     async checkIntegrationTestsPassBeforeMerge(product: Product) {
         this.requireStatusCheck(product, 'Integration test');
     }
 
+    @check({ mandatory: false })
     async checkUnitTestsHaveFullCoverage(product: Product) {
         const whitelist = [ /test/, /buildSrc/, /^build.gradle.kts$/, /^cdk/, /^tools/, /deployment/, /integration/ ]
 

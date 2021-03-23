@@ -14,12 +14,16 @@ export abstract class Rule {
     ) {
     }
 
-    async requireWorkflow(product: Product, workflowFileName: string): Promise<void> {
+    async requireWorkflowExists(product: Product, workflowFileName: string): Promise<string> {
         const workflowFilePath = `.github/workflows/${workflowFileName}.yml`;
-
         const workflow = product.repo.workflows.find(workflow => workflow.path == workflowFilePath);
         assert(workflow, `add workflow ${workflowFileName}.yml from the template`);
+        return workflowFilePath;
+    }
 
+    async requireWorkflow(product: Product, workflowFileName: string): Promise<void> {
+        const workflowFilePath = await this.requireWorkflowExists(product, workflowFileName);
+        
         // get the workflow file contents
         const workflowContent = await this.getRepoFileContent(product, workflowFilePath);
         const templateContent = this.getTemplateFileContent(workflowFilePath);

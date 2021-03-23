@@ -2,6 +2,7 @@ import { Octokit } from "@octokit/rest";
 import assert from "assert";
 import { injectable } from "tsyringe";
 
+import { check } from "../check";
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
 
@@ -14,6 +15,7 @@ export class Branching extends Rule {
         super(octokit)
     }
 
+    @check({ mandatory: true })
     async checkOneMainBranch(product: Product) {
         const mainBranch = product.repo.mainBranch;
         assert(mainBranch, 'create a main branch');
@@ -23,6 +25,7 @@ export class Branching extends Rule {
         assert(otherProtected == null, `remove or unprotect branch ${otherProtected?.name}`);
     }
 
+    @check({ mandatory: true })
     async checkNoDevelopBranch(product: Product) {
         const developBranch = product.repo.branches.find(branch => branch.name == 'develop')
         assert(developBranch == null, 'remove the develop branch')
@@ -32,7 +35,7 @@ export class Branching extends Rule {
     // async checkNoFixBranchesOlderThanOneDay(product: Product) {
     // }
 
-    // TODO: PullRequestsMergeToMain
+    // Don't do this, because the review process is too slow so pull requests need to be chained
     // async checkPullRequestsMergeToMain(product: Product) {
     // }
 
@@ -44,6 +47,7 @@ export class Branching extends Rule {
     // async checkBranchesFollowNamingConvention(product: Product) {
     // }
 
+    @check({ mandatory: false })
     async checkLinearCommitHistory(product: Product) {
         assert(product.repo.settings.allow_squash_merge == true, 'enable squash merge');
         assert(product.repo.settings.allow_merge_commit == false, 'disable merge commit');
@@ -61,6 +65,7 @@ export class Branching extends Rule {
         });
     }
 
+    @check({ mandatory: false})
     async checkDeleteBranchAfterPullRequestMerged(product: Product) {
         assert(product.repo.settings.delete_branch_on_merge,
             'enable delete-branch-on-merge setting');
@@ -74,6 +79,7 @@ export class Branching extends Rule {
         });
     }
 
+    @check({ mandatory: false })
     async checkOnlyShortLivedBranches(product: Product) {
         const mainBranch = product.repo.mainBranch;
         assert(mainBranch, 'create a main branch');

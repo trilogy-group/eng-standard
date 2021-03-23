@@ -10,16 +10,21 @@ import { checkHumanName as humanCheckName, ruleHumanName as humanRuleName, Rule,
 import { GitHubService } from "./services/GitHubService";
 
 import './rules';
+import { checks } from "./check";
 import { Product } from "./model/Product";
 
-export const enum Result {
+
+export enum Result {
     PASS,
+    WARN,
     FAIL,
     ERROR
 }
 
 @injectable()
 export class ComplianceChecker {
+
+    fixableResults = [ Result.FAIL, Result.WARN ]
 
     constructor(
         @inject('rules') private readonly rules: Rule[],
@@ -38,7 +43,7 @@ export class ComplianceChecker {
 
         const product = new Product();
         reporter.startRun(product);
-        let passing = true;
+        let runOutcome = Result.PASS;
 
         try {
             product.repo = await this.gitHubService.loadRepository()
@@ -48,43 +53,51 @@ export class ComplianceChecker {
             reporter.startCheck('Setup', 'product is setup for compliance checks');
             reporter.reportCheck('Setup', 'product is setup for compliance checks', Result.FAIL, remediation);
             reporter.reportRule('Setup', Result.FAIL);
-            passing = false;
+            runOutcome = Result.FAIL;
         }
 
         if (product.repo != null) {
             for(const rule of this.rules) {
                 const humanRuleNameVal = humanRuleName(rule);
                 reporter.startRule(humanRuleNameVal);
-                let rulePassing = true;
+                let ruleOutcome = Result.PASS;
 
                 for(const [checkName, checkFunc] of this.listChecks(rule)) {
+                    const checkOptions = checks[checkName]
                     const humanCheckNameVal = humanCheckName(checkName);
                     const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
                     reporter.startCheck(humanRuleNameVal, humanCheckNameVal);
 
-                    let outcome;
+                    if (checkOptions == null) {
+                        throw new Error(`Cannot find options for ${checkName} did you declare it with @check?`)
+                    }
+
+                    let checkOutcome: Result | undefined;
                     let message;
-                    for(let attempt = 0; outcome == null; attempt++) {
+                    for(let attempt = 0; checkOutcome == null; attempt++) {
                         // check the status
                         try {
                             await checkFunc.call(rule, product);
-                            outcome = Result.PASS;
+                            checkOutcome = Result.PASS;
                         } catch (error) {
-                            if (error instanceof AssertionError) {
-                                outcome = Result.FAIL;
+                            if (!(error instanceof AssertionError)) {
+                                checkOutcome = Result.ERROR;
+                                message = `${humanCheckNameVal}: ${error.message}`;
+                            } else if (checkOptions.mandatory) {
+                                checkOutcome = Result.FAIL;
                                 message = error.message;
                             } else {
-                                outcome = Result.ERROR;
-                                message = `${humanCheckNameVal}: ${error.message}`;
+                                checkOutcome = Result.WARN;
+                                message = error.message;
                             }
                         }
 
                         // try to repair it
-                        if (attempt == 0 && outcome != Result.PASS && doRepair && fixFunc) {
+                        if (attempt == 0 && this.fixableResults.includes(checkOutcome) && doRepair && fixFunc) {
                             try {
                                 await fixFunc.call(rule, product);
                                 product.repo = await this.gitHubService.loadRepository();
-                                outcome = undefined;
+                                checkOutcome = undefined;
                                 message = undefined;
                             } catch (repairError) {
                                 message += ` and repair failed with ${repairError}`;
@@ -92,21 +105,21 @@ export class ComplianceChecker {
                         }
                     }
 
-                    reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, outcome, message);
-                    rulePassing &&= (outcome == Result.PASS);
+                    reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, checkOutcome, message);
+                    ruleOutcome = Math.max(ruleOutcome, checkOutcome)
                 }
 
-                reporter.reportRule(humanRuleNameVal, rulePassing ? Result.PASS : Result.FAIL);
-                passing &&= rulePassing;
+                reporter.reportRule(humanRuleNameVal, ruleOutcome);
+                runOutcome = Math.max(runOutcome, ruleOutcome)
             }
         }
 
-        reporter.reportRun(product, passing ? Result.PASS : Result.FAIL);
-        if (!passing && doRepair) {
+        reporter.reportRun(product, runOutcome);
+        if (!runOutcome && doRepair) {
             console.log('trilogy-eng-standards needs admin access on your repository to fix most issues');
         }
         console.log('');
-        process.exitCode = passing ? 0 : 1;
+        process.exitCode = runOutcome < Result.ERROR ? 0 : 1;
     }
 
     listChecks(rule: any): Map<string,RuleCheck> {

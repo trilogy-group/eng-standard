@@ -1,6 +1,7 @@
 import { Octokit } from "@octokit/rest";
 import assert from "assert";
 import { injectable } from "tsyringe";
+import { check } from "../check";
 
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
@@ -12,11 +13,17 @@ export class Building extends Rule {
         super(octokit)
     }
 
-    async checkBuildUsesGitHubActionsAndNpm(product: Product) {
+    @check({ mandatory: true })
+    async checkBuildUsesGitHubActions(product: Product) {
+        await this.requireWorkflowExists(product, 'verify')
+    }
+
+    @check({ mandatory: false })
+    async checkBuildUsesStandardImplementation(product: Product) {
         await this.requireWorkflow(product, 'verify');
     }
 
-    async fixBuildUsesGitHubActionsAndNpm(product: Product) {
+    async fixBuildUsesStandardImplementation(product: Product) {
         await this.fixWorkflow(product, 'verify');
     }
 
