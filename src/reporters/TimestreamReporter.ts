@@ -1,4 +1,5 @@
 import { _Record, DescribeEndpointsCommand, Dimension, TimestreamWriteClient, WriteRecordsCommand } from "@aws-sdk/client-timestream-write";
+import { CheckOptions } from "../check";
 
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
@@ -41,7 +42,7 @@ export class TimestreamReporter extends Reporter {
     this.records = [];
   }
 
-  reportCheck(ruleName: string, checkName: string, outcome: Result, message?: string) {
+  reportCheck(ruleName: string, checkName: string, checkOptions: CheckOptions, outcome: Result, message?: string) {
     const dimensions = [];
     if (message) {
       dimensions.push({ Name: 'reason', Value: message.replace(/[\/]/g, '_') })
@@ -52,6 +53,7 @@ export class TimestreamReporter extends Reporter {
         { Name: 'level', Value: 'check' },
         { Name: 'rule', Value: ruleName },
         { Name: 'check', Value: checkName },
+        { Name: 'mandatory', Value: String(checkOptions.mandatory) },
         ...dimensions
       ],
       MeasureName: `${ruleName} - ${checkName}`,

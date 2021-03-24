@@ -1,3 +1,4 @@
+import { CheckOptions } from "../check";
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
 import { Reporter } from "./Reporter";
@@ -22,8 +23,8 @@ export class MultiReporter extends Reporter {
         this.reporters.forEach(reporter => reporter.startCheck(ruleName, checkName))
     }
 
-    reportCheck(ruleName: string, checkName: string, outcome: Result, message?: string) {
-        this.reporters.forEach(reporter => reporter.reportCheck(ruleName, checkName, outcome, message))
+    reportCheck(ruleName: string, checkName: string, checkOptions: CheckOptions, outcome: Result, message?: string) {
+        this.reporters.forEach(reporter => reporter.reportCheck(ruleName, checkName, checkOptions, outcome, message))
     }
 
     reportRule(ruleName: string, outcome: Result) {

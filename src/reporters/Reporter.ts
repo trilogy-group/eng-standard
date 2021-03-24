@@ -1,3 +1,4 @@
+import { CheckOptions } from "../check";
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
 
@@ -15,7 +16,7 @@ export abstract class Reporter {
         // do not report by default
     }
 
-    reportCheck(ruleName: string, checkName: string, outcome: Result, message?: string) {
+    reportCheck(ruleName: string, checkName: string, checkOptions: CheckOptions, outcome: Result, message?: string) {
         // do not report by default
     }
 

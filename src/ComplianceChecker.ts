@@ -51,7 +51,7 @@ export class ComplianceChecker {
             const remediation = 'check repo location and grant trilogy-eng-standards access';
             reporter.startRule('Setup');
             reporter.startCheck('Setup', 'product is setup for compliance checks');
-            reporter.reportCheck('Setup', 'product is setup for compliance checks', Result.FAIL, remediation);
+            reporter.reportCheck('Setup', 'product is setup for compliance checks', { mandatory: true }, Result.FAIL, remediation);
             reporter.reportRule('Setup', Result.FAIL);
             runOutcome = Result.FAIL;
         }
@@ -105,7 +105,7 @@ export class ComplianceChecker {
                         }
                     }
 
-                    reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, checkOutcome, message);
+                    reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, checkOptions, checkOutcome, message);
                     ruleOutcome = Math.max(ruleOutcome, checkOutcome)
                 }
 

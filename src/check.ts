@@ -1,4 +1,4 @@
-interface CheckOptions {
+export interface CheckOptions {
     mandatory: boolean
 }
 
