@@ -14,7 +14,7 @@ export class Testing extends Rule {
         super(octokit)
     }
 
-    @check({ mandatory: true })
+    @check({ mandatory: false })
     async checkCodeAnalysisPassesBeforeMerge(product: Product) {
         this.requireStatusCheck(product, 'Analyze');
     }
