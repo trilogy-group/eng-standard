@@ -31,10 +31,6 @@ export class Branching extends Rule {
         assert(developBranch == null, 'remove the develop branch')
     }
 
-    // TODO: NoFixBranchesOlderThanOneDay
-    // async checkNoFixBranchesOlderThanOneDay(product: Product) {
-    // }
-
     // Don't do this, because the review process is too slow so pull requests need to be chained
     // async checkPullRequestsMergeToMain(product: Product) {
     // }
