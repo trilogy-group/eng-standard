@@ -29,6 +29,7 @@ export class Repo {
         this.branches = branches;
         this.mainBranch = mainBranch;
         this.currentBranchName = process.env.INPUT_BRANCH ?? 'main';
+        console.log(`Branch is ${this.currentBranchName}`)
 
         // attributes are missing unless we get protection separately
         if (mainBranch && mainBranchProtection) {
