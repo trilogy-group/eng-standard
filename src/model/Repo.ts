@@ -28,8 +28,7 @@ export class Repo {
         this.workflows = workflows.filter(workflow => workflow.state === 'active');
         this.branches = branches;
         this.mainBranch = mainBranch;
-        this.currentBranchName = process.env.INPUT_BRANCH ?? 'main';
-        console.log(`Branch is ${this.currentBranchName}`)
+        this.currentBranchName = process.env.INPUT_BRANCH || 'main';
 
         // attributes are missing unless we get protection separately
         if (mainBranch && mainBranchProtection) {
