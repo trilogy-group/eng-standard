@@ -1,7 +1,9 @@
+import { RequestError } from "@octokit/request-error";
 import { AssertionError } from "assert";
 import { inject, injectable } from "tsyringe";
 
-import { RequestError } from "@octokit/request-error";
+import { checks } from "./check";
+import { Product } from "./model/Product";
 import { ConsoleReporter } from './reporters/ConsoleReporter';
 import { MultiReporter } from './reporters/MultiReporter';
 import { Reporter } from "./reporters/Reporter";
@@ -10,9 +12,6 @@ import { checkHumanName as humanCheckName, ruleHumanName as humanRuleName, Rule,
 import { GitHubService } from "./services/GitHubService";
 
 import './rules';
-import { checks } from "./check";
-import { Product } from "./model/Product";
-
 
 export enum Result {
     PASS,
@@ -119,7 +118,7 @@ export class ComplianceChecker {
             console.log('trilogy-eng-standards needs admin access on your repository to fix most issues');
         }
         console.log('');
-        process.exitCode = runOutcome < Result.ERROR ? 0 : 1;
+        process.exitCode = runOutcome < Result.FAIL ? 0 : 1;
     }
 
     listChecks(rule: any): Map<string,RuleCheck> {
