@@ -80,10 +80,10 @@ export class ComplianceChecker {
                             checkOutcome = Result.PASS;
                         } catch (error) {
                             checkOutcome = checkOptions.mandatory ? Result.FAIL : Result.WARN;
-                            if (!(error instanceof AssertionError)) {
-                                message = `${humanCheckNameVal}: ${error.message}`;
-                            } else {
+                            if (error instanceof AssertionError) {
                                 message = error.message;
+                            } else {
+                                message = `${humanCheckNameVal}: ${error.message}`;
                             }
                         }
 
