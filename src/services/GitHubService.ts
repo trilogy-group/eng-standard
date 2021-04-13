@@ -6,7 +6,7 @@ import { Repo } from "../model/Repo";
 @injectable()
 export class GitHubService {
 
-    KEY_FILES = ['jest.config.json', 'build.gradle.kts'];
+    INDEXED_FILES = ['jest.config.json', 'build.gradle.kts'];
 
     constructor(
         private readonly octokit: Octokit
@@ -62,11 +62,11 @@ export class GitHubService {
             .catch(this.handleError),
 
             this.octokit.search.code({
-                q: `repo:${repoId} ` + this.KEY_FILES.map(f => `filename:${f}`).join(' '),
+                q: `repo:${repoId} ` + this.INDEXED_FILES.map(f => `filename:${f}`).join(' '),
             }).then(response => response.data.items.map(file => file.path))
 
-        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection, keyFiles ]) =>
-            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection, keyFiles)
+        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection, fileIndex ]) =>
+            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection, fileIndex)
         );
     }
 

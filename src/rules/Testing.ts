@@ -34,7 +34,7 @@ export class Testing extends Rule {
         const whitelist = [ /test/, /buildSrc/, /^build.gradle.kts$/, /^cdk/, /^tools/, /deployment/, /integration/ ]
 
         // Jest for Typescript projects
-        const allJestConfigs = product.repo.keyFiles.filter(file =>
+        const allJestConfigs = product.repo.fileIndex.filter(file =>
             file.endsWith('jest.config.json') && !whitelist.some(ex => ex.test(file)));
         for (const jestConfigFile of allJestConfigs) {
             const jestConfig = YAML.parse(await this.getRepoFileContent(product, jestConfigFile));
@@ -46,7 +46,7 @@ export class Testing extends Rule {
         }
 
         // Gradle for Java projects
-        const allGradleConfigs = product.repo.keyFiles.filter(file =>
+        const allGradleConfigs = product.repo.fileIndex.filter(file =>
             file.endsWith('build.gradle.kts') && !whitelist.some(ex => ex.test(file)));
         for (const configFile of allGradleConfigs) {
             const gradleConfig = await this.getRepoFileContent(product, configFile);

@@ -19,7 +19,7 @@ export class Repo {
         readonly branches: BranchShort[],
         readonly mainBranch: BranchWithProtection | undefined,
         readonly mainBranchProtection: BranchProtection | undefined,
-        readonly keyFiles: string[]
+        readonly fileIndex: string[]
     ) {
         this.id = `${owner}/${name}`;
         this.owner = owner;
