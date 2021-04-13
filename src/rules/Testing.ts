@@ -2,8 +2,8 @@ import { Octokit } from "@octokit/rest";
 import assert from "assert";
 import { injectable } from "tsyringe";
 import YAML from "yaml";
-import { check } from "../check";
 
+import { check } from "../check";
 import { Product } from "../model/Product";
 import { Rule } from "../Rule";
 
