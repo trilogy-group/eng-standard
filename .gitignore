@@ -3,3 +3,5 @@ node_modules
 lib
 dist
 template
+cdk.out
+cdk.context.json
