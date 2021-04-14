@@ -1,4 +1,4 @@
-name: Continuous flow
+name: Release GitHub Action
 
 on:
   workflow_dispatch:
