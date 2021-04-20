@@ -1,10 +1,12 @@
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 import 'reflect-metadata';
 import { container } from 'tsyringe';
 import  './OctokitFactory';
 import { ComplianceChecker } from './ComplianceChecker';
+import { Product } from './model/Product';
 
 // this is for debugging GitHub actions
 if (process.env.DEBUG) {
@@ -16,4 +18,5 @@ if (process.env.DEBUG) {
 }
 
 const complianceChecker = container.resolve(ComplianceChecker);
-complianceChecker.main();
+const product = new Product();
+complianceChecker.checkProduct(product);

@@ -1,16 +1,13 @@
-import { RequestError } from "@octokit/request-error";
 import { AssertionError } from "assert";
 import { inject, injectable } from "tsyringe";
 
 import { checks } from "./check";
 import { Product } from "./model/Product";
-import { ConsoleReporter } from './reporters/ConsoleReporter';
-import { MultiReporter } from './reporters/MultiReporter';
 import { Reporter } from "./reporters/Reporter";
-import { TimestreamReporter } from './reporters/TimestreamReporter';
 import { checkHumanName as humanCheckName, ruleHumanName as humanRuleName, Rule, RuleCheck } from "./Rule";
 import { GitHubService } from "./services/GitHubService";
 
+import './reporters';
 import './rules';
 
 export enum Result {
@@ -23,49 +20,43 @@ export enum Result {
 @injectable()
 export class ComplianceChecker {
 
-    fixableResults = [ Result.FAIL, Result.WARN ]
+    readonly fixableResults = [ Result.FAIL, Result.WARN ]
+    readonly doRepair: boolean;
 
     constructor(
         @inject('rules') private readonly rules: Rule[],
+        @inject('reporter') private readonly reporter: Reporter,
         private readonly gitHubService: GitHubService
     ) {
+        this.doRepair = process.env.INPUT_REPAIR === 'true';
     }
 
-    async main() {
-        const doRepair = process.env.INPUT_REPAIR === 'true';
-
-        const reporters: Reporter[] = [ new ConsoleReporter() ]
-        if (TimestreamReporter.enabled()) {
-            reporters.push(new TimestreamReporter())
-        }
-        const reporter = new MultiReporter(reporters);
-
-        const product = new Product();
-        reporter.startRun(product);
+    async checkProduct(product: Product): Promise<void> {
+        this.reporter.startRun(product);
         let runOutcome = Result.PASS;
 
         try {
-            product.repo = await this.gitHubService.loadRepository()
+            product.repo = await this.gitHubService.loadRepository(product.repoId);
         } catch (error) {
             const remediation = 'check repo location and grant trilogy-eng-standards access';
-            reporter.startRule('Setup');
-            reporter.startCheck('Setup', 'product is setup for compliance checks');
-            reporter.reportCheck('Setup', 'product is setup for compliance checks', { mandatory: true }, Result.FAIL, remediation);
-            reporter.reportRule('Setup', Result.FAIL);
+            this.reporter.startRule('Setup');
+            this.reporter.startCheck('Setup', 'product is setup for compliance checks');
+            this.reporter.reportCheck('Setup', 'product is setup for compliance checks', { mandatory: true }, Result.FAIL, remediation);
+            this.reporter.reportRule('Setup', Result.FAIL);
             runOutcome = Result.FAIL;
         }
 
         if (product.repo != null) {
             for(const rule of this.rules) {
                 const humanRuleNameVal = humanRuleName(rule);
-                reporter.startRule(humanRuleNameVal);
+                this.reporter.startRule(humanRuleNameVal);
                 let ruleOutcome = Result.PASS;
 
                 for(const [checkName, checkFunc] of this.listChecks(rule)) {
                     const checkOptions = checks[checkName]
                     const humanCheckNameVal = humanCheckName(checkName);
                     const fixFunc = Reflect.get(rule, checkName.replace('check', 'fix'));
-                    reporter.startCheck(humanRuleNameVal, humanCheckNameVal);
+                    this.reporter.startCheck(humanRuleNameVal, humanCheckNameVal);
 
                     if (checkOptions == null) {
                         throw new Error(`Cannot find options for ${checkName} did you declare it with @check?`)
@@ -88,10 +79,10 @@ export class ComplianceChecker {
                         }
 
                         // try to repair it
-                        if (attempt == 0 && this.fixableResults.includes(checkOutcome) && doRepair && fixFunc) {
+                        if (attempt == 0 && this.fixableResults.includes(checkOutcome) && this.doRepair && fixFunc) {
                             try {
                                 await fixFunc.call(rule, product);
-                                product.repo = await this.gitHubService.loadRepository();
+                                product.repo = await this.gitHubService.loadRepository(product.repoId);
                                 checkOutcome = undefined;
                                 message = undefined;
                             } catch (repairError) {
@@ -100,17 +91,17 @@ export class ComplianceChecker {
                         }
                     }
 
-                    reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, checkOptions, checkOutcome, message);
+                    this.reporter.reportCheck(humanRuleNameVal, humanCheckNameVal, checkOptions, checkOutcome, message);
                     ruleOutcome = Math.max(ruleOutcome, checkOutcome)
                 }
 
-                reporter.reportRule(humanRuleNameVal, ruleOutcome);
+                this.reporter.reportRule(humanRuleNameVal, ruleOutcome);
                 runOutcome = Math.max(runOutcome, ruleOutcome)
             }
         }
 
-        reporter.reportRun(product, runOutcome);
-        if (!runOutcome && doRepair) {
+        this.reporter.reportRun(product, runOutcome);
+        if (!runOutcome && this.doRepair) {
             console.log('trilogy-eng-standards needs admin access on your repository to fix most issues');
         }
         console.log('');

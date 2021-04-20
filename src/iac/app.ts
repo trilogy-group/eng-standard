@@ -2,6 +2,7 @@ import { Instance, InstanceType, MachineImage, Peer, Port, SecurityGroup, UserDa
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup } from '@aws-cdk/aws-elasticloadbalancingv2'
 import { InstanceIdTarget } from '@aws-cdk/aws-elasticloadbalancingv2-targets'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
 import { App, CfnOutput, Construct, Stack, StackProps } from '@aws-cdk/core'
 
@@ -106,6 +107,10 @@ export class MyStack extends Stack {
 
         new CfnOutput(this, 'url', { value: lb.loadBalancerDnsName })
         new CfnOutput(this, 'ssh', { value: `ssh://bitnami@${ec2.instancePrivateIp}` })
+
+        new NodejsFunction(this, 'eng-standard', {
+            entry: ''
+        })
     }
 }
 
