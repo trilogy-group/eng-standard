@@ -1,9 +1,9 @@
+import { Instance, InstanceType, MachineImage, Peer, Port, SecurityGroup, UserData, Vpc } from '@aws-cdk/aws-ec2'
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup } from '@aws-cdk/aws-elasticloadbalancingv2'
-import { Instance, InstanceType, MachineImage, Peer, Port, SecurityGroup, Vpc, CfnEIPAssociation, UserData } from '@aws-cdk/aws-ec2'
-import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
-import { App, CfnOutput, Construct, Stack, StackProps } from '@aws-cdk/core'
 import { InstanceIdTarget } from '@aws-cdk/aws-elasticloadbalancingv2-targets'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
+import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
+import { App, CfnOutput, Construct, Stack, StackProps } from '@aws-cdk/core'
 
 const BITNAMI = '979382823631'
 
