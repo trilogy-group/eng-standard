@@ -29,7 +29,7 @@
     "@vercel/ncc": "^0.25.1",
     "aws-cdk": "~1",
     "chalk": "*",
-    "dotenv": "*",
+    "csv-parser": "^3.0.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "*",
     "tsyringe": "~4",
