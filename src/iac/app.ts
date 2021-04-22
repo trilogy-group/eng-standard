@@ -1,4 +1,4 @@
-import { Instance, InstanceType, MachineImage, Peer, Port, SecurityGroup, UserData, Vpc } from '@aws-cdk/aws-ec2'
+import { Instance, InstanceType, MachineImage, Peer, Port, SecurityGroup, Subnet, UserData, Vpc } from '@aws-cdk/aws-ec2'
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup } from '@aws-cdk/aws-elasticloadbalancingv2'
 import { InstanceIdTarget } from '@aws-cdk/aws-elasticloadbalancingv2-targets'
 import { Rule, Schedule } from '@aws-cdk/aws-events'
@@ -10,12 +10,18 @@ import { App, CfnOutput, Construct, Duration, Fn, Stack, StackProps } from '@aws
 import * as path from 'path'
 
 const BITNAMI = '979382823631'
+const vpcName = 'CN-Development'
+const availabilityZone = 'us-east-1c'
+const subnetId = 'subnet-0e251e1c64ffec456' // CNA-Development-Public
+// load balancer requires two AZs
+const secondaryAvailabilityZone = 'us-east-1d'
+const secondarySubnetId = 'subnet-027165e52297871a7' // CNB-Development-Public
 
 export class MyStack extends Stack {
     private readonly checkInterval = Duration.minutes(15)
 
     constructor(scope: Construct, id: string, props?: StackProps) {
-        super(scope, id, props);
+        super(scope, id, props)
 
         const db = new CfnDatabase(this, 'ShipEveryMerge', {
             // databaseName: 'ShipEveryMerge'
@@ -31,8 +37,14 @@ export class MyStack extends Stack {
         })
         const tableName = Fn.select(1, Fn.split('|', table.ref, 2))
 
-        const vpc = Vpc.fromLookup(this, 'vpc', {
-            vpcName: 'operations-sys-main'
+        const vpc = Vpc.fromLookup(this, 'vpc', { vpcName })
+        const subnet = Subnet.fromSubnetAttributes(this, 'subnet', {
+            subnetId,
+            availabilityZone
+        })
+        const secondarySubnet = Subnet.fromSubnetAttributes(this, 'secondarySubnet', {
+            subnetId: secondarySubnetId,
+            availabilityZone: secondaryAvailabilityZone
         })
 
         const ec2SecurityGroup = new SecurityGroup(this, 'grafana-ec2-sg', { vpc })
@@ -71,9 +83,10 @@ datasources:
             // instanceName: 'grafana',
             instanceType: new InstanceType('t3.small'),
             keyName: 'sem-grafana',
-            availabilityZone: 'us-east-1a',
-            sourceDestCheck: true,
             vpc,
+            availabilityZone,
+            vpcSubnets: { subnets: [ subnet ] },
+            sourceDestCheck: true,
             securityGroup: ec2SecurityGroup,
             machineImage: MachineImage.lookup({
                 name: 'bitnami-grafana-*',
@@ -90,7 +103,7 @@ datasources:
                 "timestream:SelectValues"
             ],
             resources: ['*']
-            })
+        })
 
         const timestreamReadPolicy = new PolicyStatement({
             actions: [
@@ -125,6 +138,7 @@ datasources:
         const lb = new ApplicationLoadBalancer(this, 'grafana', {
             // loadBalancerName: 'grafana',
             vpc,
+            vpcSubnets: { subnets: [ subnet, secondarySubnet ] },
             internetFacing: true,
             securityGroup: lbSecurityGroup
         })
