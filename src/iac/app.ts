@@ -1,13 +1,13 @@
 import { Instance, InstanceType, MachineImage, Peer, Port, SecurityGroup, UserData, Vpc } from '@aws-cdk/aws-ec2'
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup } from '@aws-cdk/aws-elasticloadbalancingv2'
 import { InstanceIdTarget } from '@aws-cdk/aws-elasticloadbalancingv2-targets'
+import { Rule, Schedule } from '@aws-cdk/aws-events'
+import { LambdaFunction } from '@aws-cdk/aws-events-targets'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
 import { App, CfnOutput, Construct, Duration, Fn, Stack, StackProps } from '@aws-cdk/core'
 import * as path from 'path'
-import { Rule, Schedule } from '@aws-cdk/aws-events'
-import { LambdaFunction } from '@aws-cdk/aws-events-targets'
 
 const BITNAMI = '979382823631'
 
@@ -32,7 +32,7 @@ export class MyStack extends Stack {
         const tableName = Fn.select(1, Fn.split('|', table.ref, 2))
 
         const vpc = Vpc.fromLookup(this, 'vpc', {
-            vpcName: 'CN-Development'  
+            vpcName: 'operations-sys-main'
         })
 
         const ec2SecurityGroup = new SecurityGroup(this, 'grafana-ec2-sg', { vpc })
@@ -67,7 +67,7 @@ datasources:
             'sudo /opt/bitnami/ctlscript.sh restart grafana'
         )
 
-        const ec2 = new Instance(this, 'grafana', {
+        const ec2 = new Instance(this, 'grafana-ec2', {
             // instanceName: 'grafana',
             instanceType: new InstanceType('t3.small'),
             keyName: 'sem-grafana',
@@ -122,7 +122,7 @@ datasources:
         const lbSecurityGroup = new SecurityGroup(this, 'grafana-lb-sg', { vpc })
         lbSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(80))
 
-        const lb = new ApplicationLoadBalancer(this, 'grafana-lb', {
+        const lb = new ApplicationLoadBalancer(this, 'grafana', {
             // loadBalancerName: 'grafana',
             vpc,
             internetFacing: true,
