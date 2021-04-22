@@ -6,5 +6,5 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "exclude": ["template"] /* Should not attempt to build the template code */
+  "exclude": ["template", "cdk.out"] /* Should not attempt to build the template code */
 }

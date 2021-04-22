@@ -62,10 +62,17 @@ export abstract class Rule {
     }
 
     private getTemplateFileContent(workflowFilePath: string) {
-        const appFileName = require.main?.filename;
-        if (!appFileName) throw new Error('Cannot determine project location, require.main is undefined');
-        const appDir = path.dirname(path.dirname(appFileName));
-        return fs.readFileSync(`${appDir}/template/${workflowFilePath}`, { encoding: 'utf8' });
+        const templateDir = this.getTemplateDir()
+        return fs.readFileSync(`${templateDir}/${workflowFilePath}`, { encoding: 'utf8' });
+    }
+
+    private getTemplateDir(): string {
+        let appDir = __dirname;
+        while (!fs.existsSync(`${appDir}/template`)) {
+            appDir = path.dirname(appDir);
+            if (!appDir || appDir === '/') throw new Error('Cannot determine project location');
+        }
+        return `${appDir}/template`;
     }
 
     async getRepoFileContent(product: Product, filePath: string) {
