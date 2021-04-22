@@ -70,7 +70,7 @@ datasources:
         const ec2 = new Instance(this, 'grafana', {
             // instanceName: 'grafana',
             instanceType: new InstanceType('t3.small'),
-            keyName: 'robert',
+            keyName: 'sem-grafana',
             availabilityZone: 'us-east-1a',
             sourceDestCheck: true,
             vpc,
