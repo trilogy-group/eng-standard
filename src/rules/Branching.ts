@@ -98,7 +98,7 @@ export class Branching extends Rule {
 
             // if branch has no commits, skip it
             if (diff.commits.length == 0) {
-                return;
+                continue
             }
 
             const commitDate = diff.commits[0].commit.committer?.date;
