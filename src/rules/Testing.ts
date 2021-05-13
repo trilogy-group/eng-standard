@@ -15,22 +15,22 @@ export class Testing extends Rule {
     }
 
     @check({ mandatory: false })
-    async checkCodeAnalysisPassesBeforeMerge(product: Product) {
+    async checkCodeAnalysisPassesBeforeMerge(product: Product): Promise<void> {
         this.requireStatusCheck(product, 'Analyze');
     }
 
     @check({ mandatory: true })
-    async checkUnitTestsPassBeforeMerge(product: Product) {
+    async checkUnitTestsPassBeforeMerge(product: Product): Promise<void> {
         this.requireStatusCheck(product, 'Test');
     }
     
     @check({ mandatory: true })
-    async checkIntegrationTestsPassBeforeMerge(product: Product) {
+    async checkIntegrationTestsPassBeforeMerge(product: Product): Promise<void> {
         this.requireStatusCheck(product, 'Integration test');
     }
 
     @check({ mandatory: false })
-    async checkUnitTestsHaveFullCoverage(product: Product) {
+    async checkUnitTestsHaveFullCoverage(product: Product): Promise<void> {
         const whitelist = [ /test/, /buildSrc/, /^build.gradle.kts$/, /^cdk/, /^tools/, /deployment/, /integration/ ]
 
         // Jest for Typescript projects

@@ -7,11 +7,13 @@ import { Reporter } from "./Reporter";
 
 export class TimestreamReporter extends Reporter {
   
-  private readonly region: string;
   private readonly db: string;
   private readonly table: string;
+  private readonly metricsTable: string;
+  private readonly writerPromise: Promise<TimestreamWriteClient>
   private product!: Product
-  private records!: _Record[];
+  private records!: _Record[]
+  private metricRecords!: _Record[]
 
   // workaround because timestream endpoint resolution is broken https://github.com/aws/aws-sdk-js-v3/issues/1898
   async getTimestreamEndpoint(region: string): Promise<string> {
@@ -27,10 +29,17 @@ export class TimestreamReporter extends Reporter {
     if (process.env.INPUT_TIMESTREAM_REGION == null) throw new Error('INPUT_TIMESTREAM_REGION must be specified');
     if (process.env.INPUT_TIMESTREAM_DB == null) throw new Error('INPUT_TIMESTREAM_DB must be specified');
     if (process.env.INPUT_TIMESTREAM_TABLE == null) throw new Error('INPUT_TIMESTREAM_TABLE must be specified');
+    if (process.env.INPUT_TIMESTREAM_METRICS_TABLE == null) throw new Error('INPUT_TIMESTREAM_METRICS_TABLE must be specified');
 
-    this.region = process.env.INPUT_TIMESTREAM_REGION as string;
+    const region = process.env.INPUT_TIMESTREAM_REGION as string;
     this.db = process.env.INPUT_TIMESTREAM_DB as string;
     this.table = process.env.INPUT_TIMESTREAM_TABLE as string;
+    this.metricsTable = process.env.INPUT_TIMESTREAM_METRICS_TABLE as string;
+
+    this.writerPromise = (async () => {
+      const endpoint = await this.getTimestreamEndpoint(region);
+      return new TimestreamWriteClient({ endpoint });
+    })()
   }
 
   static enabled(): boolean {
@@ -40,6 +49,7 @@ export class TimestreamReporter extends Reporter {
   startRun(product: Product) {
     this.product = product;
     this.records = [];
+    this.metricRecords = [];
   }
 
   reportCheck(ruleName: string, checkName: string, checkOptions: CheckOptions, outcome: Result, message?: string) {
@@ -59,6 +69,19 @@ export class TimestreamReporter extends Reporter {
       MeasureName: `${ruleName} - ${checkName}`,
       MeasureValue: Result[outcome],
       MeasureValueType: 'VARCHAR'
+    });
+  }
+
+  reportMetric(ruleName: string, metricName: string, value: number, time?: Date) {
+    this.metricRecords.push({
+      Dimensions: [
+        { Name: 'rule', Value: ruleName }
+      ],
+      MeasureName: metricName,
+      MeasureValue: String(value),
+      MeasureValueType: 'DOUBLE',
+      Time: String(time?.getTime() ?? Date.now()),
+      TimeUnit: 'MILLISECONDS'
     });
   }
 
@@ -95,7 +118,7 @@ export class TimestreamReporter extends Reporter {
       dimensions.push({ Name: 'repo', Value: this.product.repo.name })
     }
 
-    const cmd = new WriteRecordsCommand({
+    const complianceCmd = new WriteRecordsCommand({
       DatabaseName: this.db,
       TableName: this.table,
       Records: this.records,
@@ -105,10 +128,21 @@ export class TimestreamReporter extends Reporter {
       }
     });
 
+    const metricsCmd = new WriteRecordsCommand({
+      DatabaseName: this.db,
+      TableName: this.metricsTable,
+      Records: this.metricRecords,
+      CommonAttributes: {
+        Dimensions: dimensions
+      }
+    });
+
     try {
-      const endpoint = await this.getTimestreamEndpoint(this.region);
-      const writer = new TimestreamWriteClient({ endpoint });
-      await writer.send(cmd)
+      const writer = await this.writerPromise;
+      await Promise.all([
+        writer.send(complianceCmd),
+        writer.send(metricsCmd)
+      ])
     } catch (error) {
       console.error('Error writing to Timestream', error);
     }

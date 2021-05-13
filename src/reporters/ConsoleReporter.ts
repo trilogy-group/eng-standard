@@ -14,6 +14,11 @@ export class ConsoleReporter extends Reporter {
         console.log(`${this.renderCheckOutcome(outcome)} ${message ?? checkName}`);
     }
 
+    // don't log metrics, they're a bit spammy, but you'll need this for debugging metrics
+    // reportMetric(ruleName: string, metricName: string, value: number, time?: Date) {
+    //     console.log(Chalk.gray(`# ${metricName} ${time?.toISOString()} ${value}`))
+    // }
+
     symbol(result: Result): string {
         switch (result) {
             case Result.PASS: return '✓';

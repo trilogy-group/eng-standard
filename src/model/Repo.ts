@@ -2,6 +2,7 @@ import { components } from "@octokit/openapi-types";
 
 export type FullRepository = components["schemas"]["full-repository"]
 export type Workflow = components["schemas"]["workflow"];
+export type WorkflowRun = components["schemas"]["workflow-run"];
 export type BranchShort = components["schemas"]["branch-short"];
 export type BranchWithProtection = components["schemas"]["branch-with-protection"];
 export type BranchProtection = components["schemas"]["branch-protection"];
@@ -19,7 +20,8 @@ export class Repo {
         readonly branches: BranchShort[],
         readonly mainBranch: BranchWithProtection | undefined,
         readonly mainBranchProtection: BranchProtection | undefined,
-        readonly fileIndex: string[]
+        readonly fileIndex: string[],
+        readonly prodDeploys: WorkflowRun[] | undefined
     ) {
         this.id = `${owner}/${name}`;
         this.owner = owner;

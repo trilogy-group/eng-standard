@@ -109,6 +109,14 @@ export interface RuleCheck {
     (product: Product): Promise<void>
 }
 
+export interface RuleMetric {
+    (product: Product, metrics: MetricWriter): Promise<void>
+}
+
+export interface MetricWriter {
+    report(value: number, time?: Date): void
+}
+
 function camelToHuman(camelStr: string) {
     return camelStr.replace(/((?=[A-Z])|(?<![0-9])(?=[0-9]))/g, ' ').trim();
 }
@@ -118,7 +126,7 @@ export function ruleHumanName(rule: Rule) {
 }
 
 export function checkHumanName(functionName: string) {
-    return camelToHuman(functionName.replace('check', ''))
+    return camelToHuman(functionName.replace(/^(check|metric|fix)/, ''))
         .toLowerCase()
         .replace(/git hub/g, 'GitHub')
         .replace(/ship every merge/g, 'Ship Every Merge');

@@ -20,6 +20,10 @@ export abstract class Reporter {
         // do not report by default
     }
 
+    reportMetric(ruleName: string, metricName: string, value: number, time?: Date) {
+        // do not report by default
+    }
+
     reportRule(ruleName: string, outcome: Result) {
         // do not report by default
     }

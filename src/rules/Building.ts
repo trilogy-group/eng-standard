@@ -16,21 +16,21 @@ export class Building extends Rule {
     }
 
     @check({ mandatory: true })
-    async checkBuildUsesGitHubActions(product: Product) {
+    async checkBuildUsesGitHubActions(product: Product): Promise<void> {
         await this.requireWorkflowExists(product, 'verify')
     }
 
     @check({ mandatory: false })
-    async checkBuildUsesStandardImplementation(product: Product) {
+    async checkBuildUsesStandardImplementation(product: Product): Promise<void> {
         await this.requireWorkflow(product, 'verify');
     }
 
-    async fixBuildUsesStandardImplementation(product: Product) {
+    async fixBuildUsesStandardImplementation(product: Product): Promise<void> {
         await this.fixWorkflow(product, 'verify');
     }
 
     @check({ mandatory: false })
-    async checkBuildAndTestIsUnder15Minutes(product: Product) {
+    async checkBuildAndTestIsUnder15Minutes(product: Product): Promise<void> {
         const runs = await this.octokit.actions.listWorkflowRuns({
             owner: product.repo.owner,
             repo: product.repo.name,

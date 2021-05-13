@@ -16,7 +16,7 @@ export class Branching extends Rule {
     }
 
     @check({ mandatory: true })
-    async checkOneMainBranch(product: Product) {
+    async checkOneMainBranch(product: Product): Promise<void> {
         const mainBranch = product.repo.mainBranch;
         assert(mainBranch, 'create a main branch');
 
@@ -26,7 +26,7 @@ export class Branching extends Rule {
     }
 
     @check({ mandatory: true })
-    async checkNoDevelopBranch(product: Product) {
+    async checkNoDevelopBranch(product: Product): Promise<void> {
         const developBranch = product.repo.branches.find(branch => branch.name == 'develop')
         assert(developBranch == null, 'remove the develop branch')
     }
@@ -44,13 +44,13 @@ export class Branching extends Rule {
     // }
 
     @check({ mandatory: false })
-    async checkLinearCommitHistory(product: Product) {
+    async checkLinearCommitHistory(product: Product): Promise<void> {
         assert(product.repo.settings.allow_squash_merge == true, 'enable squash merge');
         assert(product.repo.settings.allow_merge_commit == false, 'disable merge commit');
         assert(product.repo.settings.allow_rebase_merge == false, 'disable rebase merge');
     }
 
-    async fixLinearCommitHistory(product: Product) {
+    async fixLinearCommitHistory(product: Product): Promise<void> {
         await this.octokit.repos.update({
             owner: product.repo.owner,
             repo: product.repo.name,
@@ -62,12 +62,12 @@ export class Branching extends Rule {
     }
 
     @check({ mandatory: false})
-    async checkDeleteBranchAfterPullRequestMerged(product: Product) {
+    async checkDeleteBranchAfterPullRequestMerged(product: Product): Promise<void> {
         assert(product.repo.settings.delete_branch_on_merge,
             'enable delete-branch-on-merge setting');
     }
 
-    async fixDeleteBranchAfterPullRequestMerged(product: Product) {
+    async fixDeleteBranchAfterPullRequestMerged(product: Product): Promise<void> {
         await this.octokit.repos.update({
             owner: product.repo.owner,
             repo: product.repo.name,
@@ -76,7 +76,7 @@ export class Branching extends Rule {
     }
 
     @check({ mandatory: false })
-    async checkOnlyShortLivedBranches(product: Product) {
+    async checkOnlyShortLivedBranches(product: Product): Promise<void> {
         const mainBranch = product.repo.mainBranch;
         assert(mainBranch, 'create a main branch');
 

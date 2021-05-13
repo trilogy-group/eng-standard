@@ -14,13 +14,13 @@ export class Reviewing extends Rule {
     }
 
     @check({ mandatory: true })
-    async checkEngineeringStandardsAreEnforced(product: Product) {
+    async checkEngineeringStandardsAreEnforced(product: Product): Promise<void> {
         await this.requireWorkflow(product, 'engineering-standards');
         this.requireStatusCheck(product, 'Enforce standards');
     }
 
     @check({ mandatory: true })
-    async checkPullRequestsMustBeReviewed(product: Product) {
+    async checkPullRequestsMustBeReviewed(product: Product): Promise<void> {
         const reviews = product.mainProtection.required_pull_request_reviews;
         assert(reviews,
             'enable pull request reviews on main branch');

@@ -60,10 +60,18 @@ export class GitHubService {
 
             this.octokit.search.code({
                 q: `repo:${repoId} ` + this.INDEXED_FILES.map(f => `filename:${f}`).join(' '),
-            }).then(response => response.data.items.map(file => file.path))
+            }).then(response => response.data.items.map(file => file.path)),
 
-        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection, fileIndex ]) =>
-            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection, fileIndex)
+            this.octokit.actions.listWorkflowRuns({
+                owner: owner,
+                repo: name,
+                workflow_id: 'deploy-prod.yml',
+                status: 'completed'
+            }).then(response => response.data.workflow_runs)
+            .catch(this.handleError)
+
+        ]).then(([ settings, workflows, branches, mainBranch, mainBranchProtection, fileIndex, prodDeploys ]) =>
+            new Repo(owner, name, settings, workflows, branches, mainBranch, mainBranchProtection, fileIndex, prodDeploys)
         );
     }
 

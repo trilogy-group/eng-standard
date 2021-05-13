@@ -27,6 +27,10 @@ export class MultiReporter extends Reporter {
         this.reporters.forEach(reporter => reporter.reportCheck(ruleName, checkName, checkOptions, outcome, message))
     }
 
+    reportMetric(ruleName: string, metricName: string, value: number, time?: Date) {
+        this.reporters.forEach(reporter => reporter.reportMetric(ruleName, metricName, value, time))
+    }
+
     reportRule(ruleName: string, outcome: Result) {
         this.reporters.forEach(reporter => reporter.reportRule(ruleName, outcome))
     }
