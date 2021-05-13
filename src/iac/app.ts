@@ -23,19 +23,26 @@ export class MyStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props)
 
-        const db = new CfnDatabase(this, 'ShipEveryMerge', {
-            // databaseName: 'ShipEveryMerge'
-        })
+        const db = new CfnDatabase(this, 'ShipEveryMerge')
 
         const table = new CfnTable(this, 'Compliance', {
             databaseName: db.ref,
-            // tableName: 'Compliance',
             retentionProperties: {
                 MemoryStoreRetentionPeriodInHours: '24',
                 MagneticStoreRetentionPeriodInDays: '365'
             }
         })
-        const tableName = Fn.select(1, Fn.split('|', table.ref, 2))
+
+        const metricsTable = new CfnTable(this, 'Metrics', {
+            databaseName: db.ref,
+            retentionProperties: {
+                MemoryStoreRetentionPeriodInHours: '744', // 1 month
+                MagneticStoreRetentionPeriodInDays: '3650' // 10 years
+            }
+        })
+
+        const tableName = this.timestreamTableName(table)
+        const metricsTableName = this.timestreamTableName(metricsTable)
 
         const vpc = Vpc.fromLookup(this, 'vpc', { vpcName })
         const subnet = Subnet.fromSubnetAttributes(this, 'subnet', {
@@ -51,21 +58,8 @@ export class MyStack extends Stack {
         ec2SecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(22))
         ec2SecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(3000))
 
-        const complianceDataSource = `
-apiVersion: 1
-datasources:
-- name: Compliance
-  type: "grafana-timestream-datasource"
-  access: direct
-  basicAuth: false
-  isDefault: false
-  readOnly: true
-  jsonData:
-    authType: default
-    defaultDatabase: "\\"${db.ref}\\""
-    defaultTable: "\\"${tableName}\\""
-    defaultRegion: "${this.region}"
-        `.trim().replace('\n', '\\n')
+        const complianceDataSource = this.dataSourceConfig('Compliance', db, tableName)
+        const metricsDataSource = this.dataSourceConfig('Metrics', db, metricsTableName)
 
         const ec2Init = UserData.forLinux()
         ec2Init.addCommands(
@@ -75,6 +69,7 @@ datasources:
             'sudo grafana-cli --pluginsDir /bitnami/grafana/data/plugins plugins install grafana-timestream-datasource',
             // enable data sources
             `echo -e '${complianceDataSource}' > /bitnami/grafana/conf/provisioning/datasources/compliance.yaml`,
+            `echo -e '${metricsDataSource}' > /bitnami/grafana/conf/provisioning/datasources/metrics.yaml`,
             // apply changes by restarting grafana
             'sudo /opt/bitnami/ctlscript.sh restart grafana'
         )
@@ -117,7 +112,8 @@ datasources:
             ],
             resources: [
                 db.attrArn,
-                table.attrArn
+                table.attrArn,
+                metricsTable.attrArn
             ]
         })
 
@@ -125,7 +121,8 @@ datasources:
             actions: [ "timestream:*" ],
             resources: [
                 db.attrArn,
-                table.attrArn
+                table.attrArn,
+                metricsTable.attrArn
             ]
         })
 
@@ -170,6 +167,7 @@ datasources:
                 GITHUB_TOKEN: process.env.GITHUB_TOKEN as string,
                 INPUT_TIMESTREAM_DB: db.ref,
                 INPUT_TIMESTREAM_TABLE: tableName,
+                INPUT_TIMESTREAM_METRICS_TABLE: metricsTableName,
                 INPUT_TIMESTREAM_REGION: this.region
             },
             bundling: {
@@ -203,6 +201,28 @@ datasources:
           schedule: Schedule.rate(this.checkInterval),
           targets: [new LambdaFunction(lambda)]
         })
+    }
+
+    private dataSourceConfig(dataSourceName: string, db: CfnDatabase, tableName: string) {
+        return `
+apiVersion: 1
+datasources:
+- name: ${dataSourceName}
+  type: "grafana-timestream-datasource"
+  access: direct
+  basicAuth: false
+  isDefault: false
+  readOnly: true
+  jsonData:
+    authType: default
+    defaultDatabase: "\\"${db.ref}\\""
+    defaultTable: "\\"${tableName}\\""
+    defaultRegion: "${this.region}"
+        `.trim().replace('\n', '\\n')
+    }
+
+    private timestreamTableName(table: CfnTable) {
+        return Fn.select(1, Fn.split('|', table.ref, 2))
     }
 }
 
