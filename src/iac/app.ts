@@ -67,6 +67,7 @@ export class MyStack extends Stack {
             'echo -e "\n[auth.anonymous]\nenabled = true" >> /opt/bitnami/grafana/conf/grafana.ini',
             // install plugins
             'sudo grafana-cli --pluginsDir /bitnami/grafana/data/plugins plugins install grafana-timestream-datasource',
+            'sudo grafana-cli --pluginsDir /bitnami/grafana/data/plugins plugins install marcusolsson-json-datasource',
             // enable data sources
             `echo -e '${complianceDataSource}' > /bitnami/grafana/conf/provisioning/datasources/compliance.yaml`,
             `echo -e '${metricsDataSource}' > /bitnami/grafana/conf/provisioning/datasources/metrics.yaml`,
