@@ -71,7 +71,8 @@ export const handler = async () => {
             TimeUnit: 'MILLISECONDS',
             MeasureName: 'uptime',
             MeasureValue: String(row[col.col] / 100.0),
-            MeasureValueType: 'DOUBLE'
+            MeasureValueType: 'DOUBLE',
+            Version: Date.now()
         }))
     })
 
