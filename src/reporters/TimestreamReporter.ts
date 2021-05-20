@@ -112,6 +112,7 @@ export class TimestreamReporter extends Reporter {
 
   async publishRecords(): Promise<void> {
     const dimensions = [
+      { Name: 'product_id', Value: this.product.id },
       { Name: 'product', Value: this.product.name }
     ];
     if (this.product.repo != null) {

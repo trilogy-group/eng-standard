@@ -175,7 +175,6 @@ export class MyStack extends Stack {
                 metafile: true,
                 // set environment variables here that should not be changed
                 define: {
-                    'process.env.INPUT_PRODUCT_FILE': JSON.stringify('products.tsv'),
                     'process.env.INPUT_REPAIR': JSON.stringify(false)
                 },
                 commandHooks: {
@@ -183,7 +182,6 @@ export class MyStack extends Stack {
                     beforeInstall: () => [],
                     afterBundling(inputDir: string, outputDir: string): string[] {
                         return [
-                            `cp ${inputDir}/products.tsv ${outputDir}`,
                             `cp -R ${inputDir}/template/ ${outputDir}/template`,
                             // ensure the template is clean, needed in development
                             `find ${outputDir}/template -name node_modules -depth -exec rm -rf \\{\\} \\;`,
