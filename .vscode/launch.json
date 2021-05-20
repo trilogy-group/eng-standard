@@ -19,7 +19,7 @@
             "name": "Clone",
             "type": "node",
             "request": "launch",
-            "args": ["src/iac/clone-uptime-db.lambda.ts"],
+            "args": ["src/run-clone-uptime.ts"],
             "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
             "sourceMaps": true,
             "cwd": "${workspaceRoot}",

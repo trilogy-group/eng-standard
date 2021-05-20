@@ -45,7 +45,7 @@ export class MyStack extends Stack {
         const uptimeTable = new CfnTable(this, 'Uptime', {
             databaseName: db.ref,
             retentionProperties: {
-                MemoryStoreRetentionPeriodInHours: '744', // 1 month
+                MemoryStoreRetentionPeriodInHours: '8766', // 1 year
                 MagneticStoreRetentionPeriodInDays: '3650' // 10 years
             }
         })

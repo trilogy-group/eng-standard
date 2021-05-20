@@ -40,16 +40,20 @@ export const handler = async () => {
     const series = response.results[0].series[0]
     const projectCol = series.columns.indexOf('project')
 
+    const minDate = dayjs().utc(true).subtract(365, 'days').toDate()
+    const maxDate = new Date()
+
     const weekCols = series.columns.flatMap((colName: string, col: number) => {
-        const weekMatches = colName.match(/(\d{4}):W(\d+)/)
-        if (weekMatches == null) return []
-        const year = Number(weekMatches[1])
-        const week = Number(weekMatches[2])
+        const matches = colName.match(/(\d{4}):W(\d+)/)
+        if (matches == null) return []
+        const year = Number(matches[1])
+        const week = Number(matches[2])
         const date = endOfWeek(week, year)
-        return { col, year, week, date }
+        if (date < minDate || date > maxDate) return []
+        return { col, date }
     }) as Array<{col: number, date: Date}>
 
-    const records = series.values.flatMap((row: any) => {
+    const records: any[] = series.values.flatMap((row: any) => {
         const productKey = row[projectCol]
 
         const dimensions = [
@@ -63,19 +67,26 @@ export const handler = async () => {
 
         return weekCols.map(col => ({
             Dimensions: dimensions,
-            Time: col.date.toISOString(),
+            Time: String(col.date.getTime()),
+            TimeUnit: 'MILLISECONDS',
             MeasureName: 'uptime',
-            MeasureValue: row[col.col],
+            MeasureValue: String(row[col.col] / 100.0),
             MeasureValueType: 'DOUBLE'
         }))
     })
 
     const writer = await getTimestreamWrite()
-    await writer.writeRecords({
-        DatabaseName: db,
-        TableName: replicaTable,
-        Records: records
-    })
+    const batchSize = 100
+    for(let i=0; i<records.length; i+=batchSize) {
+        const recordBatch = records.slice(i, i + batchSize)
+        try {
+            await writer.writeRecords({
+                DatabaseName: db,
+                TableName: replicaTable,
+                Records: recordBatch
+            })
+        } catch (error) {
+            throw error
+        }
+    }
 }
-
-handler()
