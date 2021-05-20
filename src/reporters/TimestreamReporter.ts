@@ -3,6 +3,7 @@ import { CheckOptions } from "../check";
 
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
+import { getTimestreamWrite } from "../Timestream";
 import { Reporter } from "./Reporter";
 
 export class TimestreamReporter extends Reporter {
@@ -10,7 +11,6 @@ export class TimestreamReporter extends Reporter {
   private readonly db: string;
   private readonly table: string;
   private readonly metricsTable: string;
-  private readonly writerPromise: Promise<TimestreamWriteClient>
   private product!: Product
   private records!: _Record[]
   private metricRecords!: _Record[]
@@ -25,25 +25,14 @@ export class TimestreamReporter extends Reporter {
 
   constructor() {
     super();
-    
-    if (process.env.INPUT_TIMESTREAM_REGION == null) throw new Error('INPUT_TIMESTREAM_REGION must be specified');
-    if (process.env.INPUT_TIMESTREAM_DB == null) throw new Error('INPUT_TIMESTREAM_DB must be specified');
-    if (process.env.INPUT_TIMESTREAM_TABLE == null) throw new Error('INPUT_TIMESTREAM_TABLE must be specified');
-    if (process.env.INPUT_TIMESTREAM_METRICS_TABLE == null) throw new Error('INPUT_TIMESTREAM_METRICS_TABLE must be specified');
 
-    const region = process.env.INPUT_TIMESTREAM_REGION as string;
-    this.db = process.env.INPUT_TIMESTREAM_DB as string;
-    this.table = process.env.INPUT_TIMESTREAM_TABLE as string;
-    this.metricsTable = process.env.INPUT_TIMESTREAM_METRICS_TABLE as string;
-
-    this.writerPromise = (async () => {
-      const endpoint = await this.getTimestreamEndpoint(region);
-      return new TimestreamWriteClient({ endpoint });
-    })()
+    this.db = process.env.TIMESTREAM_DB as string;
+    this.table = process.env.TIMESTREAM_TABLE as string;
+    this.metricsTable = process.env.TIMESTREAM_METRICS_TABLE as string;
   }
 
   static enabled(): boolean {
-    return process.env.INPUT_TIMESTREAM_DB != null;
+    return process.env.TIMESTREAM_DB != null;
   }
 
   startRun(product: Product) {
@@ -139,7 +128,7 @@ export class TimestreamReporter extends Reporter {
     });
 
     try {
-      const writer = await this.writerPromise;
+      const writer = await getTimestreamWrite();
       await Promise.all([
         writer.send(complianceCmd),
         writer.send(metricsCmd)

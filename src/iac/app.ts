@@ -5,6 +5,7 @@ import { Rule, Schedule } from '@aws-cdk/aws-events'
 import { LambdaFunction } from '@aws-cdk/aws-events-targets'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
+import { Secret } from '@aws-cdk/aws-secretsmanager'
 import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
 import { App, CfnOutput, Construct, Duration, Fn, Stack, StackProps } from '@aws-cdk/core'
 import * as path from 'path'
@@ -41,8 +42,20 @@ export class MyStack extends Stack {
             }
         })
 
+        const uptimeTable = new CfnTable(this, 'Uptime', {
+            databaseName: db.ref,
+            retentionProperties: {
+                MemoryStoreRetentionPeriodInHours: '744', // 1 month
+                MagneticStoreRetentionPeriodInDays: '3650' // 10 years
+            }
+        })
+
+        const secretEngHub = Secret.fromSecretNameV2(this, 'secret-enghub', 'eng-standard/enghub')
+        const secretUptimeDb = Secret.fromSecretNameV2(this, 'secret-uptime-db', 'eng-standard/uptime-db')
+
         const tableName = this.timestreamTableName(table)
         const metricsTableName = this.timestreamTableName(metricsTable)
+        const uptimeTableName = this.timestreamTableName(uptimeTable)
 
         const vpc = Vpc.fromLookup(this, 'vpc', { vpcName })
         const subnet = Subnet.fromSubnetAttributes(this, 'subnet', {
@@ -60,6 +73,7 @@ export class MyStack extends Stack {
 
         const complianceDataSource = this.dataSourceConfig('Compliance', db, tableName)
         const metricsDataSource = this.dataSourceConfig('Metrics', db, metricsTableName)
+        const uptimeDataSource = this.dataSourceConfig('Uptime', db, uptimeTableName)
 
         const ec2Init = UserData.forLinux()
         ec2Init.addCommands(
@@ -71,6 +85,7 @@ export class MyStack extends Stack {
             // enable data sources
             `echo -e '${complianceDataSource}' > /bitnami/grafana/conf/provisioning/datasources/compliance.yaml`,
             `echo -e '${metricsDataSource}' > /bitnami/grafana/conf/provisioning/datasources/metrics.yaml`,
+            `echo -e '${uptimeDataSource}' > /bitnami/grafana/conf/provisioning/datasources/uptime.yaml`,
             // apply changes by restarting grafana
             'sudo /opt/bitnami/ctlscript.sh restart grafana'
         )
@@ -114,7 +129,8 @@ export class MyStack extends Stack {
             resources: [
                 db.attrArn,
                 table.attrArn,
-                metricsTable.attrArn
+                metricsTable.attrArn,
+                uptimeTable.attrArn
             ]
         })
 
@@ -123,7 +139,8 @@ export class MyStack extends Stack {
             resources: [
                 db.attrArn,
                 table.attrArn,
-                metricsTable.attrArn
+                metricsTable.attrArn,
+                uptimeTable.attrArn
             ]
         })
 
@@ -166,10 +183,10 @@ export class MyStack extends Stack {
             timeout: Duration.minutes(5),
             environment: {
                 GITHUB_TOKEN: process.env.GITHUB_TOKEN as string,
-                INPUT_TIMESTREAM_DB: db.ref,
-                INPUT_TIMESTREAM_TABLE: tableName,
-                INPUT_TIMESTREAM_METRICS_TABLE: metricsTableName,
-                INPUT_TIMESTREAM_REGION: this.region
+                TIMESTREAM_DB: db.ref,
+                TIMESTREAM_TABLE: tableName,
+                TIMESTREAM_METRICS_TABLE: metricsTableName,
+                TIMESTREAM_REGION: this.region
             },
             bundling: {
                 metafile: true,
@@ -195,10 +212,30 @@ export class MyStack extends Stack {
 
         lambda.grantPrincipal.addToPrincipalPolicy(timestreamBasePolicy)
         lambda.grantPrincipal.addToPrincipalPolicy(timestreamWritePolicy)
+        secretEngHub.grantRead(lambda.grantPrincipal)
 
         new Rule(this, 'eng-standard-schedule', {
           schedule: Schedule.rate(this.checkInterval),
           targets: [new LambdaFunction(lambda)]
+        })
+
+        const cloneUptimeLambda = new NodejsFunction(this, 'clone-uptime', {
+            entry: path.resolve(__dirname, '..', 'clone-uptime.lambda.js'),
+            timeout: Duration.minutes(5),
+            environment: {
+                TIMESTREAM_DB: db.ref,
+                TIMESTREAM_UPTIME_TABLE: uptimeTableName,
+                TIMESTREAM_REGION: this.region
+            }
+        })
+        cloneUptimeLambda.grantPrincipal.addToPrincipalPolicy(timestreamBasePolicy)
+        cloneUptimeLambda.grantPrincipal.addToPrincipalPolicy(timestreamWritePolicy)
+        secretEngHub.grantRead(cloneUptimeLambda.grantPrincipal)
+        secretUptimeDb.grantRead(cloneUptimeLambda.grantPrincipal)
+
+        new Rule(this, 'clone-uptime-schedule', {
+            schedule: Schedule.rate(Duration.minutes(5)),
+            targets: [new LambdaFunction(cloneUptimeLambda)]
         })
     }
 
