@@ -3,7 +3,7 @@ import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup } 
 import { InstanceIdTarget } from '@aws-cdk/aws-elasticloadbalancingv2-targets'
 import { Rule, Schedule } from '@aws-cdk/aws-events'
 import { LambdaFunction } from '@aws-cdk/aws-events-targets'
-import { PolicyStatement } from '@aws-cdk/aws-iam'
+import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 import { Secret } from '@aws-cdk/aws-secretsmanager'
 import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
@@ -144,8 +144,15 @@ export class MyStack extends Stack {
             ]
         })
 
+        const cloudWatchAcrossAccountPolicy = new PolicyStatement({
+            actions: [ 'sts:AssumeRole' ],
+            resources: [ 'arn:aws:iam::*:role/CloudWatch-CrossAccountSharingRole' ]
+        })
+
         ec2.grantPrincipal.addToPrincipalPolicy(timestreamBasePolicy)
         ec2.grantPrincipal.addToPrincipalPolicy(timestreamReadPolicy)
+        ec2.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('CloudWatchReadOnlyAccess'))
+        ec2.role.addToPrincipalPolicy(cloudWatchAcrossAccountPolicy)
 
         const lbSecurityGroup = new SecurityGroup(this, 'grafana-lb-sg', { vpc })
         lbSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(80))
