@@ -8,11 +8,11 @@ import { container, injectable, singleton } from 'tsyringe';
 @singleton()
 export class ConsoleReporter extends Reporter {
 
-    startRule(ruleName: string) {
+    startRule(ruleName: string): void {
         console.log(`\n${ruleName}`);
     }
 
-    reportCheck(ruleName: string, checkName: string, checkOptions: CheckOptions, outcome: Result, message?: string) {
+    reportCheck(ruleName: string, checkName: string, checkOptions: CheckOptions, outcome: Result, message?: string): void {
         console.log(`${this.renderCheckOutcome(outcome)} ${message ?? checkName}`);
     }
 
@@ -47,7 +47,7 @@ export class ConsoleReporter extends Reporter {
         return Chalk.inverse(this.color(result)(Result[result]));
     }
 
-    reportRun(product: Product, outcome: Result) {
+    reportRun(product: Product, outcome: Result): void {
         const outcomeText = this.renderOverallOutcome(outcome);
         console.log(`\n${Chalk.inverse(outcomeText)}`);
     }
