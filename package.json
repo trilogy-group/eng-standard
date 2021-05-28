@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "clean": "rm -rf dist lib cdk.out",
-    "prebuild": "bin/get-template.sh; npm install",
+    "prebuild": "npm install",
     "build": "tsc && ncc build lib/cli.js -o dist",
     "start": "ts-node src/cli.ts",
     "deploy": "cdk deploy"

@@ -200,19 +200,6 @@ export class MyStack extends Stack {
                 // set environment variables here that should not be changed
                 define: {
                     'process.env.INPUT_REPAIR': JSON.stringify(false)
-                },
-                commandHooks: {
-                    beforeBundling: () => [],
-                    beforeInstall: () => [],
-                    afterBundling(inputDir: string, outputDir: string): string[] {
-                        return [
-                            `cp -R ${inputDir}/template/ ${outputDir}/template`,
-                            // ensure the template is clean, needed in development
-                            `find ${outputDir}/template -name node_modules -depth -exec rm -rf \\{\\} \\;`,
-                            `find ${outputDir}/template -name build -depth -exec rm -rf \\{\\} \\;`,
-                            `rm -rf ${outputDir}/template/.git`
-                        ];
-                    }
                 }
               }
         })

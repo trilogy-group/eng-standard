@@ -26,7 +26,7 @@ export abstract class Rule {
         
         // get the workflow file contents
         const workflowContent = await this.getRepoFileContent(product, workflowFilePath);
-        const templateContent = this.getTemplateFileContent(workflowFilePath);
+        const templateContent = await this.getTemplateFileContent(workflowFilePath);
 
         // check that it matches the template
         assert(workflowContent == templateContent, `update workflow ${workflowFileName}.yml to match the template`);
@@ -34,7 +34,7 @@ export abstract class Rule {
 
     async fixWorkflow(product: Product, workflowFileName: string): Promise<void> {
         const workflowFilePath = `.github/workflows/${workflowFileName}.yml`;
-        const templateContent = this.getTemplateFileContent(workflowFilePath);
+        const templateContent = await this.getTemplateFileContent(workflowFilePath);
 
         // we need the existing file for the sha check
         // may be null if the file does not exist or is inaccessible
@@ -61,30 +61,28 @@ export abstract class Rule {
         assert(checks?.includes(statusCheckName), `set pull requests to require that ${statusCheckName} passes`);
     }
 
-    private getTemplateFileContent(workflowFilePath: string) {
-        const templateDir = this.getTemplateDir()
-        return fs.readFileSync(`${templateDir}/${workflowFilePath}`, { encoding: 'utf8' });
-    }
-
-    private getTemplateDir(): string {
-        let appDir = __dirname;
-        while (!fs.existsSync(`${appDir}/template`)) {
-            appDir = path.dirname(appDir);
-            if (!appDir || appDir === '/') throw new Error('Cannot determine project location');
-        }
-        return `${appDir}/template`;
+    async getTemplateFileContent(filePath: string) {
+        return await this.getGitHubFileContent(
+            'trilogy-group', 'eng-template', filePath
+        )
     }
 
     async getRepoFileContent(product: Product, filePath: string) {
+        return await this.getGitHubFileContent(
+            product.repo.owner,
+            product.repo.name,
+            filePath,
+            product.repo.currentBranchName
+        )
+    }
+
+    async getGitHubFileContent(owner: string, repo: string, path: string, ref?:string) {
         const fileResponse = await this.octokit.repos.getContent({
-            owner: product.repo.owner,
-            repo: product.repo.name,
-            path: filePath,
-            ref: product.repo.currentBranchName
+            owner, repo, path, ref
         }).then(response => response.data) as {content ?: string};
 
         if (fileResponse.content == null) {
-            throw new Error(`File ${filePath} does not exist or could not be accessed`)
+            throw new Error(`File ${path} does not exist or could not be accessed`)
         }
 
         return Buffer.from(fileResponse.content, 'base64').toString('utf8');
