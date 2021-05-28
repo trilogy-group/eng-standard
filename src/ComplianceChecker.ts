@@ -1,5 +1,5 @@
 import { AssertionError } from "assert";
-import { inject, injectable } from "tsyringe";
+import { inject, injectable, injectAll } from "tsyringe";
 
 import { checks } from "./check";
 import { Product } from "./model/Product";
@@ -9,6 +9,7 @@ import { GitHubService } from "./services/GitHubService";
 
 import './reporters';
 import './rules';
+import { MultiReporter } from "./reporters/MultiReporter";
 
 export enum Result {
     PASS,
@@ -24,8 +25,8 @@ export class ComplianceChecker {
     readonly doRepair: boolean;
 
     constructor(
-        @inject('rules') private readonly rules: Rule[],
-        @inject('reporter') private readonly reporter: Reporter,
+        @injectAll(Rule) private readonly rules: Rule[],
+        @inject(MultiReporter) private readonly reporter: Reporter,
         private readonly gitHubService: GitHubService
     ) {
         this.doRepair = process.env.INPUT_REPAIR === 'true';

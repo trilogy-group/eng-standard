@@ -1,11 +1,9 @@
 import { Octokit } from "@octokit/rest";
 import assert from "assert";
-import fs from "fs";
-import path from "path";
 
 import { Product } from "./model/Product";
 
-export abstract class Rule {
+export class Rule {
 
     readonly repair = process.env.repair == 'true';
 

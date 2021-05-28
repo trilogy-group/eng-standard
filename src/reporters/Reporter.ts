@@ -2,7 +2,7 @@ import { CheckOptions } from "../check";
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
 
-export abstract class Reporter {
+export class Reporter {
 
     startRun(product: Product) {
         // do not report by default

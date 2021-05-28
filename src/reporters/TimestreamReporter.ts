@@ -1,11 +1,11 @@
-import { _Record, DescribeEndpointsCommand, Dimension, TimestreamWriteClient, WriteRecordsCommand } from "@aws-sdk/client-timestream-write";
+import { _Record, WriteRecordsCommand } from "@aws-sdk/client-timestream-write";
+import { container, singleton } from "tsyringe";
 import { CheckOptions } from "../check";
-
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
 import { getTimestreamWrite } from "../Timestream";
 import { Reporter } from "./Reporter";
-
+@singleton()
 export class TimestreamReporter extends Reporter {
   
   private readonly db: string;
@@ -15,17 +15,8 @@ export class TimestreamReporter extends Reporter {
   private records!: _Record[]
   private metricRecords!: _Record[]
 
-  // workaround because timestream endpoint resolution is broken https://github.com/aws/aws-sdk-js-v3/issues/1898
-  async getTimestreamEndpoint(region: string): Promise<string> {
-      const bootstrapClient = new TimestreamWriteClient({})
-      const { Endpoints } = await bootstrapClient.send(new DescribeEndpointsCommand({}))
-      const fallbackAddress = `ingest-cell1.timestream.${region}.amazonaws.com`
-      return `https://${ Endpoints?.[0].Address ?? fallbackAddress }`
-  }
-
   constructor() {
     super();
-
     this.db = process.env.TIMESTREAM_DB as string;
     this.table = process.env.TIMESTREAM_TABLE as string;
     this.metricsTable = process.env.TIMESTREAM_METRICS_TABLE as string;
@@ -138,4 +129,8 @@ export class TimestreamReporter extends Reporter {
     }
   }
 
+}
+
+if (TimestreamReporter.enabled()) {
+  container.register(Reporter, TimestreamReporter);
 }

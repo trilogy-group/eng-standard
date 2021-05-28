@@ -1,12 +1,14 @@
+import { injectAll, singleton } from "tsyringe";
 import { CheckOptions } from "../check";
 import { Result } from "../ComplianceChecker";
 import { Product } from "../model/Product";
 import { Reporter } from "./Reporter";
 
+@singleton()
 export class MultiReporter extends Reporter {
 
     constructor(
-        public readonly reporters: Reporter[]
+        @injectAll(Reporter) public readonly reporters: Reporter[]
     ) {
         super()
     }

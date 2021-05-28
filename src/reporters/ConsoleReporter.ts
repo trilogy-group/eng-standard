@@ -3,7 +3,9 @@ import { Reporter } from './Reporter';
 import Chalk from 'chalk';
 import { Product } from '../model/Product';
 import { CheckOptions } from '../check';
+import { container, injectable, singleton } from 'tsyringe';
 
+@singleton()
 export class ConsoleReporter extends Reporter {
 
     startRule(ruleName: string) {
@@ -51,3 +53,5 @@ export class ConsoleReporter extends Reporter {
     }
 
 }
+
+container.register(Reporter, ConsoleReporter);
