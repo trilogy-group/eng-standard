@@ -227,7 +227,7 @@ export class MyStack extends Stack {
         })
 
         const cloneUptimeLambda = new NodejsFunction(this, 'clone-uptime', {
-            entry: path.resolve(__dirname, '..', 'clone-uptime.lambda.js'),
+            entry: path.resolve(__dirname, 'uptime', 'uptime-from-jira.lambda.js'),
             timeout: Duration.minutes(5),
             environment: {
                 TIMESTREAM_DB: db.ref,

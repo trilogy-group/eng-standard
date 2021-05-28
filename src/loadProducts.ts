@@ -4,24 +4,64 @@ import { getSecretProperty as getSecretConfigEntry } from './Secrets'
 
 const agg = [
   {
-    '$unwind': {
-      'path': '$SE7',
-      'preserveNullAndEmptyArrays': false
-    }
-  }, {
-    '$match': {
-      'SE7.Lifecycle': 'SeM',
-      'SE7.LifecycleStage': {
-        '$in': [ 'In Model', 'Import' ]
+      '$match': {
+          'dir': 'SOC5KV2'
       }
-    }
   }, {
-    '$project': {
-      '_id': 0,
-      'productId': '$SE7.Key',
-      'productName': '$Product',
-      'repositories': '$SE7.Repositories.GitHub'
-    }
+      '$unwind': {
+          'path': '$SE7', 
+          'preserveNullAndEmptyArrays': false
+      }
+  }, {
+      '$match': {
+          'SE7.Lifecycle': 'SeM', 
+          'SE7.LifecycleStage': {
+              '$in': [
+                  'In Model'
+              ]
+          }
+      }
+  }, {
+      '$lookup': {
+          'from': 'envds', 
+          'localField': 'dir', 
+          'foreignField': 'dir', 
+          'as': 'envds'
+      }
+  }, {
+      '$addFields': {
+          'envds': {
+              '$arrayElemAt': [
+                  '$envds', 0
+              ]
+          }
+      }
+  }, {
+      '$addFields': {
+          'EnvProd': {
+              '$arrayElemAt': [
+                  {
+                      '$filter': {
+                          'input': '$envds.environments', 
+                          'cond': {
+                              '$eq': [
+                                  '$$this.type', 'Prod'
+                              ]
+                          }
+                      }
+                  }, 0
+              ]
+          }
+      }
+  }, {
+      '$project': {
+          '_id': 0, 
+          'dir': '$dir', 
+          'productId': '$SE7.Key', 
+          'productName': '$SE7.Name', 
+          'repositories': '$SE7.Repositories.GitHub', 
+          'health': '$EnvProd.health'
+      }
   }
 ];
 
@@ -39,14 +79,14 @@ export async function loadProducts(): Promise<Product[]> {
     try {
         const result = await client.db('enghub').collection('products').aggregate(agg);
         const rows = await result.toArray();
-        return rows.flatMap(({ productId, productName, repositories }) => {
+        return rows.flatMap(({ productId, productName, repositories, health }) => {
           if (repositories == null || repositories.length == 0) {
             console.error(`${productName} (${productId}) has no repositories defined`);
             return [];
           }
 
           return repositories.map((repo: string) =>
-            new Product(productId, productName, repo)
+            new Product(productId, productName, repo, health)
           ) ?? [];
         });
     } finally {

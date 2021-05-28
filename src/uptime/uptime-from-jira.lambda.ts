@@ -2,9 +2,9 @@ import fetch from 'node-fetch'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
-import { getSecretObject } from './Secrets'
-import { loadProducts } from './loadProducts'
-import { getTimestreamWrite } from './Timestream'
+import { getSecretObject } from '../Secrets'
+import { loadProducts } from '../loadProducts'
+import { getTimestreamWrite } from '../Timestream'
 
 dayjs.extend(utc)
 dayjs.extend(weekOfYear)

@@ -9,7 +9,8 @@ export class Product {
     constructor(
         public readonly id: string,
         public readonly name: string,
-        public readonly repoId: string
+        public readonly repoId: string,
+        public readonly health?: string
     ) {
         if (repoId == null || repoId.length === 0) throw new Error('repoId must not be blank');
     }

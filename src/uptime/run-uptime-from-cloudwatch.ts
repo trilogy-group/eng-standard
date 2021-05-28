@@ -1,4 +1,4 @@
-import { handler } from './clone-uptime.lambda'
+import { handler } from './uptime-from-cloudwatch.lambda'
 
 handler().catch(error => {
     console.error(error)
