@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-    - actions.yml
-    - 'src/**'
-    - '!src/iac/**'
 
 jobs:
   run:
@@ -16,17 +12,9 @@ jobs:
 
       - name: Setup repo
         uses: actions/checkout@v2
-      
-      - name: Get template
-        uses: actions/checkout@v2
-        with:
-          repository: trilogy-group/eng-template
-          token: ${{ secrets.TEMPLATE_GITHUB_TOKEN }}
-          path: template
 
       - name: Release
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          rm -rf template/.git
           bin/release.sh
