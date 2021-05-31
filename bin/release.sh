@@ -4,6 +4,7 @@ set -e
 # create build
 git branch -c main staging
 git switch staging
+npm ci
 npm run build
 
 # commit and tag package files

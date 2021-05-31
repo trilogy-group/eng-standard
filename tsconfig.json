@@ -3,8 +3,9 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
+    "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "exclude": ["template", "cdk.out"] /* Should not attempt to build the template code */
+  "exclude": ["lib", "dist"]
 }

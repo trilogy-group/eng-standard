@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 
 import { Repo } from "../model/Repo";
 
@@ -9,7 +9,7 @@ export class GitHubService {
     INDEXED_FILES = ['jest.config.json', 'build.gradle.kts'];
 
     constructor(
-        private readonly octokit: Octokit
+        @inject(Octokit) private readonly octokit: Octokit
     ) {
         this.octokit = octokit;
     }

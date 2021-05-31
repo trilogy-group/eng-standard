@@ -1,12 +1,13 @@
+import  './OctokitFactory';
+
+import { injectable, inject, injectAll } from "tsyringe";
 import { AssertionError } from "assert";
-import { inject, injectable, injectAll } from "tsyringe";
 
 import { checks } from "./check";
 import { Product } from "./model/Product";
 import { Reporter } from "./reporters/Reporter";
 import { checkHumanName as humanCheckName, ruleHumanName as humanRuleName, Rule, RuleCheck, RuleMetric, MetricWriter } from "./Rule";
 import { GitHubService } from "./services/GitHubService";
-
 import './reporters';
 import './rules';
 import { MultiReporter } from "./reporters/MultiReporter";
@@ -27,7 +28,7 @@ export class ComplianceChecker {
     constructor(
         @injectAll(Rule) private readonly rules: Rule[],
         @inject(MultiReporter) private readonly reporter: Reporter,
-        private readonly gitHubService: GitHubService
+        @inject(GitHubService) private readonly gitHubService: GitHubService
     ) {
         this.doRepair = process.env.INPUT_REPAIR === 'true';
     }
