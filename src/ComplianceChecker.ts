@@ -46,6 +46,7 @@ export class ComplianceChecker {
             this.reporter.reportCheck('Setup', 'product is setup for compliance checks', { mandatory: true }, Result.FAIL, remediation);
             this.reporter.reportRule('Setup', Result.FAIL);
             runOutcome = Result.FAIL;
+            console.error(`failed to load repository ${product.repoId}`, error);
         }
 
         if (product.repo != null) {
