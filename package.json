@@ -20,7 +20,7 @@
     "typescript": "~4.1"
   },
   "dependencies": {
-    "@octokit/rest": "~18",
+    "@octokit/rest": "18.9.0",
     "chalk": "*",
     "yaml": "~1"
   },

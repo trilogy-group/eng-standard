@@ -35,7 +35,7 @@ export class Building extends Rule {
             owner: product.repo.owner,
             repo: product.repo.name,
             workflow_id: 'verify.yml',
-            status: 'completed',
+            conclusion: 'neutral',
             per_page: 1
         });
 
@@ -48,7 +48,7 @@ export class Building extends Rule {
             });
 
             const slowestJob = jobs.data.jobs
-                .map(job => ({...job, runtime: Math.ceil((Date.parse(job.completed_at) - Date.parse(job.started_at)) / 60000.0)}))
+                .map(job => ({...job, runtime: Math.ceil((Date.parse(job.completed_at as string) - Date.parse(job.started_at)) / 60000.0)}))
                 .sort((a,b) => a.runtime - b.runtime)
                 .pop();
 
