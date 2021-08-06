@@ -66,7 +66,7 @@ export class GitHubService {
                 owner: owner,
                 repo: name,
                 workflow_id: 'deploy-prod.yml',
-                status: 'completed'
+                conclusion: 'neutral'
             }).then(response => response.data.workflow_runs)
             .catch(this.handleError)
 
