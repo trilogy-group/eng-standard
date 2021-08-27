@@ -27,8 +27,6 @@ export class Reviewing extends Rule {
         assert(reviews.required_approving_review_count
             && reviews.required_approving_review_count > 0,
             'set pull request reviews on main branch to require at least one approval');
-        assert(reviews.dismiss_stale_reviews,
-            'set pull request reviews on main branch to dismiss stale reviews');
     }
 
     // async fixPullRequestsMustBeReviewed(product: Product) {
