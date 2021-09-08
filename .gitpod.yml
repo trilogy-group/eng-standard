@@ -6,7 +6,8 @@ github:
 tasks:
   - init: npm ci
     command: |
-      echo -e "HELLO WORLD!"
       if [ -z "${GITHUB_TOKEN}" ]; then
-        echo -e "\e[33mPlease set the environment variable GITHUB_TOKEN at https://trilogy.devspaces.com/variables\nLearn more at https://github.com/trilogy-group/eng-base-ts/blob/main/doc/github-packages.md\e[0m"
+        echo -e "\e[31;97mPlease set the environment variable GITHUB_TOKEN at https://trilogy.devspaces.com/variables\e[0m\nLearn more at https://github.com/trilogy-group/eng-base-ts/blob/main/doc/github-packages.md"
+      else
+        npm ci
       fi
