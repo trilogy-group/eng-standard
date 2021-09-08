@@ -1,0 +1,4 @@
+tasks:
+  - init: |
+        [[ -z "${GITHUB_TOKEN}" ]] && echo -e "\e[33mPlease set the environment variable GITHUB_TOKEN at https://trilogy.devspaces.com/variables\nLearn more at https://github.com/trilogy-group/eng-base-ts/blob/main/doc/github-packages.md\e[0m"
+        npm ci
