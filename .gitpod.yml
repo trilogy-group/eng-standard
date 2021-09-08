@@ -4,5 +4,5 @@ github:
     pullRequests: true
     addBadge: true
 tasks:
-  - before: bin/gitpod-check.sh
-    init: bin/gitpod-init.sh
+  - init: bin/gitpod-init.sh
+    command: bin/gitpod-start.sh
