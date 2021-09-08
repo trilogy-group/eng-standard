@@ -5,26 +5,66 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Main",
+            "name": "Check Sococo",
             "type": "node",
             "request": "launch",
             "args": ["src/cli.ts"],
             "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+            "env": {
+                "INPUT_PRODUCT_NAME": "Sococo",
+                "INPUT_REPOSITORY": "trilogy-group/sococo-5k-v3",
+                "DEBUG": "TRUE"
+            },
             "sourceMaps": true,
             "cwd": "${workspaceRoot}",
             "protocol": "inspector",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": "Clone",
+            "name": "Check Cloud CRM",
             "type": "node",
             "request": "launch",
-            "args": ["src/run-clone-uptime.ts"],
+            "args": ["src/cli.ts"],
             "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+            "env": {
+                "INPUT_PRODUCT_NAME": "Sococo",
+                "INPUT_REPOSITORY": "trilogy-group/openapps-platform",
+                "DEBUG": "TRUE"
+            },
             "sourceMaps": true,
             "cwd": "${workspaceRoot}",
             "protocol": "inspector",
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Check Cloud Charging and Billing",
+            "type": "node",
+            "request": "launch",
+            "args": ["src/cli.ts"],
+            "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+            "env": {
+                "INPUT_PRODUCT_NAME": "Sococo",
+                "INPUT_REPOSITORY": "trilogy-group/ccab",
+                "DEBUG": "TRUE"
+            },
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+        },
+        {
+            "name": "Check New DevSpaces",
+            "type": "node",
+            "request": "launch",
+            "args": ["src/cli.ts"],
+            "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+            "env": {
+                "INPUT_PRODUCT_NAME": "Sococo",
+                "INPUT_REPOSITORY": "trilogy-group/DevSpacesNew-installation",
+                "DEBUG": "TRUE"
+            },
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
         }
     ]
     
