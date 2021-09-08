@@ -1,8 +1,3 @@
-github:
-  prebuilds:
-    master: true
-    pullRequests: true
-    addBadge: true
 tasks:
   - init: bin/gitpod-init.sh
     command: bin/gitpod-start.sh
