@@ -12,6 +12,14 @@ export class Rule {
     ) {
     }
 
+    async requireFileExists(product: Product, fileName: string, message?: string): Promise<void> {
+        try {
+            await this.getRepoFileContent(product, fileName);
+        } catch (error) {
+            assert(false, message ?? `add file ${fileName}`)
+        }
+    }
+
     async requireWorkflowExists(product: Product, workflowFileName: string): Promise<string> {
         const workflowFilePath = `.github/workflows/${workflowFileName}.yml`;
         const workflow = product.repo.workflows.find(workflow => workflow.path == workflowFilePath);
@@ -125,6 +133,7 @@ export function checkHumanName(functionName: string) {
     return camelToHuman(functionName.replace(/^(check|metric|fix)/, ''))
         .toLowerCase()
         .replace(/git hub/g, 'GitHub')
+        .replace(/devspaces/g, 'DevSpaces')
         .replace(/ship every merge/g, 'Ship Every Merge');
 }
 
