@@ -4,4 +4,5 @@ github:
     pullRequests: true
     addBadge: true
 tasks:
-  - init: [ -z "${GITHUB_TOKEN}" ] && echo -e "\e[31mPlease set the environment variable GITHUB_TOKEN at https://trilogy.devspaces.com/variables\e[0m\nLearn more at https://github.com/trilogy-group/eng-base-ts/blob/main/doc/github-packages.md" || npm run ci
+  - before: bin/gitpod-check.sh
+    init: bin/gitpod-init.sh
