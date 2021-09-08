@@ -6,8 +6,6 @@ import { Repo } from "../model/Repo";
 @injectable()
 export class GitHubService {
 
-    INDEXED_FILES = ['jest.config.json', 'build.gradle.kts'];
-
     constructor(
         @inject(Octokit) private readonly octokit: Octokit
     ) {
@@ -58,9 +56,12 @@ export class GitHubService {
             }).then(response => response.data)
             .catch(this.handleError),
 
-            this.octokit.search.code({
-                q: `repo:${repoId} ` + this.INDEXED_FILES.map(f => `filename:${f}`).join(' '),
-            }).then(response => response.data.items.map(file => file.path)),
+            this.octokit.repos.listCommits({ owner, repo: name, branch: 'main', per_page: 1 }).then(response => {
+                const tree_sha = response.data[0].commit.tree.sha
+                return this.octokit.git.getTree({ owner, repo: name, tree_sha, recursive: 'true' }).then(response => {
+                    return response.data.tree.map(f => f.path).filter(p => p != null) as string[]
+                })
+            }),
 
             this.octokit.actions.listWorkflowRuns({
                 owner: owner,
