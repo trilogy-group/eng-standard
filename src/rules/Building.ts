@@ -58,7 +58,7 @@ export class Building extends Rule {
         }
     }
 
-    @check({ mandatory: false })
+    @check({ mandatory: true })
     async checkUsesDevspaces(product: Product): Promise<void> {
         await this.requireFileExists(product, '.gitpod.yml',
             'create .gitpod.yml to onboard your repo to DevSpaces')
