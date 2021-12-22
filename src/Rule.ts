@@ -69,7 +69,7 @@ export class Rule {
 
     async getTemplateFileContent(filePath: string) {
         return await this.getGitHubFileContent(
-            'trilogy-group', 'eng-template', filePath
+            'trilogy-group', 'eng-template', filePath, 'update-eng-standards-template'
         )
     }
 
