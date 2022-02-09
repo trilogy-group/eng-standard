@@ -24,8 +24,10 @@ export class Reviewing extends Rule {
         const reviews = product.mainProtection.required_pull_request_reviews;
         assert(reviews,
             'enable pull request reviews on main branch');
-        assert(reviews.required_approving_review_count
-            && reviews.required_approving_review_count > 0,
+        // without admin access GitHub hides the review rules from the API so we can't tell if it's set or not
+        assert(reviews.required_approving_review_count,
+            'set pull request reviews on main branch to require at least one approval and grant trilogy-eng-standards admin access to your repo');
+        assert(reviews.required_approving_review_count > 0,
             'set pull request reviews on main branch to require at least one approval');
     }
 
