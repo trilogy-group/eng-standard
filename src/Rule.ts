@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/rest";
 import assert from "assert";
+import { container } from 'tsyringe';
 
 import { Product } from "./model/Product";
 
@@ -7,9 +8,15 @@ export class Rule {
 
     readonly repair = process.env.repair == 'true';
 
-    constructor(
-        protected readonly octokit: Octokit
-    ) {
+    constructor() {
+    }
+
+    protected get octokit(): Octokit {
+        return container.resolve<Octokit>(Octokit)
+    }
+
+    private get octokitAdmin(): Octokit {
+        return container.resolve<Octokit>('OctokitAdmin')
     }
 
     async requireFileExists(product: Product, fileName: string, message?: string): Promise<void> {
@@ -69,12 +76,13 @@ export class Rule {
 
     async getTemplateFileContent(filePath: string) {
         return await this.getGitHubFileContent(
-            'trilogy-group', 'eng-template', filePath
+            this.octokitAdmin, 'trilogy-group', 'eng-template', filePath
         )
     }
 
     async getRepoFileContent(product: Product, filePath: string) {
         return await this.getGitHubFileContent(
+            this.octokit,
             product.repo.owner,
             product.repo.name,
             filePath,
@@ -82,8 +90,8 @@ export class Rule {
         )
     }
 
-    async getGitHubFileContent(owner: string, repo: string, path: string, ref?:string) {
-        const fileResponse = await this.octokit.repos.getContent({
+    private async getGitHubFileContent(octokit: Octokit, owner: string, repo: string, path: string, ref?:string) {
+        const fileResponse = await octokit.repos.getContent({
             owner, repo, path, ref
         }).then(response => response.data) as {content ?: string};
 

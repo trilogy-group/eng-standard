@@ -8,10 +8,6 @@ import { Rule } from "../Rule";
 @injectable()
 export class Observing extends Rule {
 
-    constructor(octokit: Octokit) {
-        super(octokit)
-    }
-
     // TODO: CloudWatchMetricsAreDefinedForAllAwsServices
     // async checkCloudWatchMetricsAreDefinedForAllAwsServices() {
     // }

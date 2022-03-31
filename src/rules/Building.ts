@@ -11,10 +11,6 @@ export class Building extends Rule {
 
     buildAndTestRuntime = 15;
 
-    constructor(octokit: Octokit) {
-        super(octokit)
-    }
-
     @check({ mandatory: true })
     async checkBuildUsesGitHubActions(product: Product): Promise<void> {
         await this.requireWorkflowExists(product, 'verify')

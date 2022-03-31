@@ -10,10 +10,6 @@ import { Rule } from "../Rule";
 @injectable()
 export class Testing extends Rule {
 
-    constructor(octokit: Octokit) {
-        super(octokit)
-    }
-
     @check({ mandatory: false })
     async checkCodeAnalysisPassesBeforeMerge(product: Product): Promise<void> {
         this.requireStatusCheck(product, 'Analyze');

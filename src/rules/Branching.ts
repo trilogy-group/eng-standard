@@ -11,10 +11,6 @@ export class Branching extends Rule {
 
     readonly maxBranchAge = 72; // hours
 
-    constructor(octokit: Octokit) {
-        super(octokit)
-    }
-
     @check({ mandatory: true })
     async checkOneMainBranch(product: Product): Promise<void> {
         const mainBranch = product.repo.mainBranch;

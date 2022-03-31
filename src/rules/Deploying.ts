@@ -8,10 +8,6 @@ import { MetricWriter, Rule } from "../Rule";
 
 @injectable()
 export class Deploying extends Rule {
-
-    constructor(octokit: Octokit) {
-        super(octokit)
-    }
     
     @check({ mandatory: true })
     async checkEveryMergeIsDeployedToProduction(product: Product): Promise<void> {

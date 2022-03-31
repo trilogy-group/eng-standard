@@ -9,10 +9,6 @@ import { Rule } from "../Rule";
 @injectable()
 export class Reviewing extends Rule {
 
-    constructor(octokit: Octokit) {
-        super(octokit)
-    }
-
     @check({ mandatory: true })
     async checkEngineeringStandardsAreEnforced(product: Product): Promise<void> {
         await this.requireWorkflow(product, 'engineering-standards');
