@@ -11,7 +11,10 @@ export class Reviewing extends Rule {
 
     @check({ mandatory: true })
     async checkEngineeringStandardsAreEnforced(product: Product): Promise<void> {
-        await this.requireWorkflow(product, 'engineering-standards');
+        await this.requireWorkflow(product, 'engineering-standards', [
+            '55e95cd24ffcdc9613ce56f42708ddecb0442d38', // GITHUB_TOKEN = ENG_STD_TOKEN
+            'bf19474bff7d431b8fab8fdb9c5c3cd3ccb51a24'  // GITHUB_TOKEN and REPO_GITHUB_TOKEN
+        ]);
         this.requireStatusCheck(product, 'Enforce standards');
     }
 
