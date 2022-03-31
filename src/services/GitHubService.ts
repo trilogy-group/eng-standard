@@ -7,9 +7,9 @@ import { Repo } from "../model/Repo";
 export class GitHubService {
 
     constructor(
-        @inject(Octokit) private readonly octokit: Octokit
+        @inject(Octokit) private readonly octokit: Octokit,
+        @inject('OctokitAdmin') private readonly octokitAdmin: Octokit
     ) {
-        this.octokit = octokit;
     }
 
     private handleError(e:any) {
@@ -48,7 +48,7 @@ export class GitHubService {
             }).then(response => response.data)
             .catch(this.handleError),
 
-            this.octokit.repos.getBranchProtection({
+            this.octokitAdmin.repos.getBranchProtection({
                 mediaType: { previews: [ 'luke-cage' ] },
                 owner: owner,
                 repo: name,
