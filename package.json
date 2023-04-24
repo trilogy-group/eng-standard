@@ -22,7 +22,7 @@
   "dependencies": {
     "@octokit/rest": "18.9.0",
     "chalk": "*",
-    "yaml": "~1"
+    "yaml": "~2"
   },
   "peerDependencies": {
     "aws-cdk": "~1",
