@@ -33,7 +33,8 @@ export class GitHubService {
             
             this.octokit.actions.listRepoWorkflows({
                 owner: owner,
-                repo: name
+                repo: name,
+                per_page: 100
             }).then(response => response.data.workflows),
 
             this.octokit.repos.listBranches({
